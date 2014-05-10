@@ -1,0 +1,5 @@
+name = Semi Anonymous
+description = Provide space, add meta data, and handle stashing of client-side data to track and react to user behavior.
+dependencies[] = libraries
+package = Other
+core = 7.x

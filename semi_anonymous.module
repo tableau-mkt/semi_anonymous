@@ -1,0 +1,189 @@
+<?php
+/**
+ * @file
+ * Client-side data space.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function semi_anonymous_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#semi_anonymous':
+      return t("Provide standardized space, adds page meta data, and will handle stashing for client-side tracking and reactions to user behavior. This module is particularly intended for folks who use Varnish caching and have very little server-side interaction for anonymous users.");
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function semi_anonymous_menu() { 
+  $items['admin/config/system/semi-anonymous'] = array(
+    'title' => 'Semi Anonymous Settings',
+    'description' => 'Provide standardized space and adds page meta data client-side use.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('semi_anonymous_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'semi_anonymous.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_page_alter().
+ * Outputs meta data details of the page, for use with local storage.
+ */
+function semi_anonymous_page_alter(&$page) {
+  $ouput_data = array();
+  $m = 'semi_anonymous_';
+
+  if (variable_get($m . 'add_page_meta', FALSE) || variable_get($m . 'track_term_hits', FALSE) || variable_get($m . 'track_browsing', FALSE)) {
+    $type = false;
+    if ($obj = _semi_anonymous_menu_get_any_object($type)) {
+      // Drop page meta data onto output object.
+      if(variable_get($m . 'add_page_meta', FALSE) && $type) {
+        // Explicit additions.
+        $ouput_data['tnid'] = (property_exists($obj, 'tnid')) ? $obj->tnid : false;
+        $ouput_data['entity_type'] = $type;
+        $ouput_data['bundle'] = (property_exists($obj, 'type')) ? $obj->type : false;
+
+        // Easy mappin'.
+        $properties = array(
+          'title',
+          'language',
+          'bundle',
+          'nid',
+          'tid',
+          'vid',
+          'name',
+          'uid',
+          'created',
+          'status',
+        );
+        foreach ($properties as $p) {
+          if (array_key_exists($p, $obj)) {
+            $ouput_data[$p] = $obj->$p;
+          }
+        }
+      }
+
+      // Tell the client-side what tags are present on this entity.
+      if (property_exists($obj, 'type')) {
+        if ($terms = _semi_anonymous_get_entity_terms($type, $obj->type, $obj)) {
+          $ouput_data['taxonomy'] = $terms;
+        }
+      }
+
+      // Allow for tracking.
+      if (variable_get($m . 'track_term_hits', FALSE)) {
+        drupal_add_js(array('semi_anonymous' => array('track_term_hits' => true)), 'setting');
+        drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/tracking.js');
+      }
+      if (variable_get($m . 'track_browsing', FALSE)) {
+        drupal_add_js(array('semi_anonymous' => array('track_browsing' => true)), 'setting');
+        drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/tracking.js');
+      }
+
+    }
+  }
+  
+//dsm($ouput_data);
+
+  if (variable_get('semi_anonymous_include', TRUE)) {
+    drupal_add_js(libraries_get_path('json2') . '/json2.js');
+    drupal_add_js(libraries_get_path('jStorage') . '/jstorage.min.js');
+
+    // Load user watching.
+    if (variable_get('semi_anonymous_store_user_origins', TRUE) && $type) {
+      drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.user.js');
+    }
+  }
+  if (!empty($ouput_data)) {
+    drupal_add_js(array('semi_anonymous_meta' => array($ouput_data)), 'setting');
+  }
+}
+
+
+/**
+ * Utility function to agnosticly get the current menu object.
+ * 
+ * @param string (reference) $return_type
+ * 
+ * return object
+ *   Entity object of current menu callback page.
+ */
+function _semi_anonymous_menu_get_any_object(&$return_type) {
+  // Figure out how this entity is loaded.
+  $type = FALSE;
+  $item = menu_get_item();
+  $vals = array_values($item['load_functions']);
+  $load_function = $vals[0];
+  $arg_position = array_search($load_function, $item['load_functions']);
+
+  // Compare to entity types.
+  $entity_info = entity_get_info();
+  foreach($entity_info as $i => $e) {
+    if ($e['load hook'] == $load_function) {
+      $type = $i;
+    }
+  }
+
+  // Many happy returns.
+  if($type && $obj = menu_get_object($type, $arg_position)) {
+    if(is_object($obj)) {
+      $return_type = $type;
+      return $obj;
+    }
+    else {
+      return FALSE;
+    }
+  }
+  else {
+    return FALSE;
+  }
+}
+
+
+/**
+ * Fetch all taxonomy terms from an entity.
+ * All fields of field type "taxonomy_term_reference" will be included.
+ * 
+ * Idea found at https://api.drupal.org/comment/50393#comment-50393
+ * Thanks to HydroZ.
+ *
+ * @param String $entity_type
+ * @param $string $bundle
+ * @param Object $entity
+ *
+ * @return array
+ *   Array with tids of entity.
+ */
+function _semi_anonymous_get_entity_terms($entity_type, $bundle, $entity) {
+  $terms = array();
+  // Use very lightweight field info list to find relevant fields.
+  foreach (field_info_field_map() as $field_name => $field_info) {
+    if ($field_info['type'] <> "taxonomy_term_reference") {
+      continue;
+    }
+    if (array_key_exists($entity_type, $field_info['bundles'])) {
+      if (in_array($bundle, $field_info['bundles'][$entity_type])) {
+        if (isset($entity->{$field_name})) {
+          // Collect terms from fields for return.
+          $values = field_get_items($entity_type, $entity, $field_name);
+          foreach ((array)$values as $tid) {
+            if ($tid) {
+              //$field_data = field_info_field($field_name);
+              //$terms[] = $tid[$field_data['settings']['allowed_values'][0]['vocabulary']]['tid'];
+              $term = taxonomy_term_load($tid['tid']);
+              $terms[$term->machine_name] = $term->tid;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return array_unique($terms);
+}
