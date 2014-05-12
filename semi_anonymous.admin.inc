@@ -36,7 +36,7 @@ function semi_anonymous_settings_form($form_state) {
     ),
     '#title' => t('Store a user\'s origins'),
     '#default_value' => variable_get('semi_anonymous_store_user_origins', TRUE),
-    '#description' => t('Capture both the true first page seen by this user AND the session origin, which will be overwritten each time a page is directly visited with no referrer.'),
+    '#description' => t('Capture both the first page origin of this user AND the most recent session entry point, overwritten each time a page is directly visited with no referrer.'),
   );
   $form['user']['semi_anonymous_track_browsing'] = array(
     '#type' => 'checkbox',
