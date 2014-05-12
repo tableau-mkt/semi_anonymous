@@ -79,11 +79,11 @@ function semi_anonymous_page_alter(&$page) {
       // Allow for tracking.
       if (variable_get($m . 'track_term_hits', FALSE)) {
         drupal_add_js(array('semi_anonymous' => array('track_term_hits' => true)), 'setting');
-        drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/tracking.js');
+        drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
       }
       if (variable_get($m . 'track_browsing', FALSE)) {
         drupal_add_js(array('semi_anonymous' => array('track_browsing' => true)), 'setting');
-        drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/tracking.js');
+        drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
       }
 
     }
