@@ -38,7 +38,7 @@ function semi_anonymous_settings_form($form_state) {
     '#default_value' => variable_get('semi_anonymous_store_user_origins', TRUE),
     '#description' => t('Capture both the first page origin of this user AND the most recent session entry point, overwritten each time a page is directly visited with no referrer.'),
   );
-  $form['user']['semi_anonymous_track_browsing'] = array(
+  $form['user']['semi_anonymous_track_page'] = array(
     '#type' => 'checkbox',
     '#states' => array(
       'disabled' => array(
@@ -46,10 +46,10 @@ function semi_anonymous_settings_form($form_state) {
       ),
     ),
     '#title' => t('Track user browsing'),
-    '#default_value' => variable_get('semi_anonymous_track_browsing', FALSE),
-    '#description' => t('Store users\'s browsing history in the user object.'),
+    '#default_value' => variable_get('semi_anonymous_track_page', FALSE),
+    '#description' => t('Store users\'s page browsing history in the user object.'),
   );
-  $form['user']['semi_anonymous_track_browsing_extent'] = array(
+  $form['user']['semi_anonymous_track_page_extent'] = array(
     '#type' => 'select',
     '#states' => array(
       'disabled' => array(
@@ -64,7 +64,7 @@ function semi_anonymous_settings_form($form_state) {
        '100' => t('100 items'),
        '0' => t('All'),
     ),
-    '#default_value' => variable_get('semi_anonymous_track_browsing_extent', 25),
+    '#default_value' => variable_get('semi_anonymous_track_page_extent', 25),
     '#description' => t('Size of tracking history. '),
   );
   /*
