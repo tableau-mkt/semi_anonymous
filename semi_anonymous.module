@@ -19,7 +19,7 @@ function semi_anonymous_help($path, $arg) {
  */
 function semi_anonymous_menu() { 
   $items['admin/config/system/semi-anonymous'] = array(
-    'title' => 'Semi Anonymous Settings',
+    'title' => 'Semi Anonymous',
     'description' => 'Provide standardized space and adds page meta data client-side use.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('semi_anonymous_settings_form'),
