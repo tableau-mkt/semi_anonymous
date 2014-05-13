@@ -5,11 +5,16 @@
  */
 function semi_anonymous_settings_form($form_state) {
   $form = array();
+  $vocabs = taxonomy_get_vocabularies();
+  $v_options = array();
+  foreach ($vocabs as $v) {
+    $v_options[$v->machine_name] = $v->name;
+  }
 
   $form['global'] = array(
     '#type' => 'fieldset',
     '#title' => t('Global'),
-    '#collapsable' => TRUE,
+    '#collapsible' => FALSE,
     '#collapsed' => FALSE,
     '#weight' => 0,
   );
@@ -23,7 +28,7 @@ function semi_anonymous_settings_form($form_state) {
   $form['user'] = array(
     '#type' => 'fieldset',
     '#title' => t('User'),
-    '#collapsable' => TRUE,
+    '#collapsible' => TRUE,
     '#collapsed' => FALSE,
     '#weight' => 3,
   );
@@ -88,7 +93,7 @@ function semi_anonymous_settings_form($form_state) {
   $form['content'] = array(
     '#type' => 'fieldset',
     '#title' => t('Content'),
-    '#collapsable' => TRUE,
+    '#collapsible' => TRUE,
     '#collapsed' => FALSE,
     '#weight' => 5,
   );
@@ -108,7 +113,27 @@ function semi_anonymous_settings_form($form_state) {
     ),
     '#title' => t('Track term hits'),
     '#default_value' => variable_get('semi_anonymous_track_term_hits', FALSE),
-    '#description' => t('Track terms present on content while browsing.'),
+    '#description' => t('Tracks "hits" to terms present on content while browsing. Requires entity meta data output.'),
+  );
+  $form['content']['track_vocabs'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Vocabs to track'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['content']['track_vocabs']['semi_anonymous_track_term_vocabs'] = array(
+    '#type' => 'checkboxes',
+    '#states' => array(
+      'enabled' => array(
+        ':input[name="semi_anonymous_include"]' => array('checked' => TRUE),
+        ':input[name="semi_anonymous_add_page_meta"]' => array('checked' => TRUE),
+        ':input[name="semi_anonymous_track_term_hits"]' => array('checked' => TRUE),
+      ),
+    ),
+    '#title' => t('Vocabs to track'),
+    '#default_value' => variable_get('semi_anonymous_track_term_vocabs', 0),
+    '#options' => $v_options,
+    '#description' => t('The vocabs which should output and tracked when recording "hits" to terms on content. Requires term hit tracking and entity meta data output.'),
   );
   $form['content']['semi_anonymous_generate_favorites'] = array(
     '#type' => 'checkbox',
