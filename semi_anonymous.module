@@ -50,6 +50,7 @@ function semi_anonymous_page_alter(&$page) {
         $ouput_data['bundle'] = (property_exists($obj, 'type')) ? $obj->type : false;
 
         // Easy mappin'.
+        // NOTE: properties mean different things on different entity types.
         $properties = array(
           'title',
           'language',
@@ -88,8 +89,6 @@ function semi_anonymous_page_alter(&$page) {
 
     }
   }
-  
-//dsm($ouput_data);
 
   if (variable_get('semi_anonymous_include', TRUE)) {
     drupal_add_js(libraries_get_path('json2') . '/json2.js');
@@ -101,7 +100,7 @@ function semi_anonymous_page_alter(&$page) {
     }
   }
   if (!empty($ouput_data)) {
-    drupal_add_js(array('semi_anonymous_meta' => array($ouput_data)), 'setting');
+    drupal_add_js(array('semi_anonymous_meta' => $ouput_data), 'setting');
   }
 }
 
@@ -162,6 +161,8 @@ function _semi_anonymous_menu_get_any_object(&$return_type) {
  */
 function _semi_anonymous_get_entity_terms($entity_type, $bundle, $entity) {
   $terms = array();
+  $vocabs = variable_get('semi_anonymous_track_term_vocabs');
+
   // Use very lightweight field info list to find relevant fields.
   foreach (field_info_field_map() as $field_name => $field_info) {
     if ($field_info['type'] <> "taxonomy_term_reference") {
@@ -174,10 +175,11 @@ function _semi_anonymous_get_entity_terms($entity_type, $bundle, $entity) {
           $values = field_get_items($entity_type, $entity, $field_name);
           foreach ((array)$values as $tid) {
             if ($tid) {
-              //$field_data = field_info_field($field_name);
-              //$terms[] = $tid[$field_data['settings']['allowed_values'][0]['vocabulary']]['tid'];
+              // Limit to selected vocabs.
               $term = taxonomy_term_load($tid['tid']);
-              $terms[$term->machine_name] = $term->tid;
+              if ($vocabs[$term->vocabulary_machine_name] != '0') {
+                $terms[$term->vocabulary_machine_name][$term->tid] = $term->name;
+              }
             }
           }
         }
@@ -185,5 +187,5 @@ function _semi_anonymous_get_entity_terms($entity_type, $bundle, $entity) {
     }
   }
 
-  return array_unique($terms);
+  return $terms;
 }
