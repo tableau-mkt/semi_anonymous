@@ -9,25 +9,24 @@
     attach: function (context) {
       if (context == document) {
 
+        // Init.
+        var n = new Date().getTime();
+            hit = {};
+
         // Stash the session entry point.
         if (!$.jStorage.get('user.origin') || !document.referrer) {
-          var n = new Date().getTime();
-          $.jStorage.set(
-            'user.session_origin',
-            '{ "timestamp" : "' + n + '", ' +
-              '"url" : "' + window.location.href + '" }'
-          );
+          hit['timestamp'] = n;
+          hit['url'] = window.location.href;
+console.log(JSON.stringify(hit));
+          $.jStorage.set('user.session_origin', JSON.stringify(hit));
         }
 
         // Stash the deep origin.
         if (!$.jStorage.get('user.origin')) {
-          var n = new Date().getTime();
-          $.jStorage.set(
-            'user.origin',
-            '{ "timestamp" : "' + n + '", ' +
-              '"url" : "' + window.location.href + '", ' +
-              '"referrer" : "' + document.referrer + '"}'
-          );
+          hit['timestamp'] = n;
+          hit['url'] = window.location.href;
+          hit['referrer'] = document.referrer;
+          $.jStorage.set('user.session_origin', JSON.stringify(hit));
         }
 
       }
