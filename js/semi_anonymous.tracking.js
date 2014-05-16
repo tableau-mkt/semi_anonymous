@@ -79,7 +79,7 @@
     if (group != false) {
       // Remove unwanted types (string beginning assumed).
       for(var i = 0; i < results.length; i++) {
-        if (results[i].indexOf('track_' + group) != 0) {
+        if (results[i].indexOf('track.' + group) != 0) {
           results.splice(i, 1);
           i--;
         }
@@ -97,7 +97,7 @@
     // Place in storage.
     var n = new Date().getTime();
     // Log event.
-    $.jStorage.set('track_' + group + '.' + n, data)
+    $.jStorage.set('track.' + group + '.' + n, data)
   };
 
 })(jQuery);
