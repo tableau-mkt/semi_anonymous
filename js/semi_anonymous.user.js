@@ -10,14 +10,13 @@
       if (context == document) {
 
         // Init.
-        var n = new Date().getTime();
+        var n = new Date().getTime(),
             hit = {};
 
         // Stash the session entry point.
         if (!$.jStorage.get('user.session_origin') || !document.referrer) {
           hit['timestamp'] = n;
           hit['url'] = window.location.href;
-console.log(JSON.stringify(hit));
           $.jStorage.set('user.session_origin', JSON.stringify(hit));
         }
 
