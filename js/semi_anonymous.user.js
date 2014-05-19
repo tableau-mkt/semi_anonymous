@@ -14,7 +14,7 @@
             hit = {};
 
         // Stash the session entry point.
-        if (!$.jStorage.get('user.origin') || !document.referrer) {
+        if (!$.jStorage.get('user.session_origin') || !document.referrer) {
           hit['timestamp'] = n;
           hit['url'] = window.location.href;
 console.log(JSON.stringify(hit));
@@ -26,7 +26,7 @@ console.log(JSON.stringify(hit));
           hit['timestamp'] = n;
           hit['url'] = window.location.href;
           hit['referrer'] = document.referrer;
-          $.jStorage.set('user.session_origin', JSON.stringify(hit));
+          $.jStorage.set('user.origin', JSON.stringify(hit));
         }
 
       }
