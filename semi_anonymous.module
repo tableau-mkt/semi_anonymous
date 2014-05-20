@@ -39,7 +39,8 @@ function semi_anonymous_page_alter(&$page) {
   $ouput_data = array();
   $m = 'semi_anonymous_';
 
-  if (variable_get($m . 'add_page_meta', FALSE) || variable_get($m . 'track_term_hits', FALSE) || variable_get($m . 'track_browsing', FALSE)) {
+  // Add details about the page.
+  if (variable_get($m . 'add_page_meta', FALSE) || variable_get($m . 'track_term_hits', FALSE)) {
     $type = false;
     if ($obj = _semi_anonymous_menu_get_any_object($type)) {
       // Drop page meta data onto output object.
@@ -70,37 +71,40 @@ function semi_anonymous_page_alter(&$page) {
         }
       }
 
-      // Tell the client-side what tags are present on this entity.
-      if (property_exists($obj, 'type')) {
-        if ($terms = _semi_anonymous_get_entity_terms($type, $obj->type, $obj)) {
-          $ouput_data['taxonomy'] = $terms;
-        }
-      }
-
-      // Allow for tracking.
+      // Allow for term tracking.
       if (variable_get($m . 'track_term_hits', FALSE)) {
+        // Tell the client-side what tags are present on this entity.
+        if (property_exists($obj, 'type')) {
+          if ($terms = _semi_anonymous_get_entity_terms($type, $obj->type, $obj)) {
+            $ouput_data['taxonomy'] = $terms;
+          }
+        }
         drupal_add_js(array('semi_anonymous' => array('track_term_hits' => true)), 'setting');
         drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
       }
-      if (variable_get($m . 'track_browsing', FALSE)) {
-        drupal_add_js(array('semi_anonymous' => array('track_browsing' => true)), 'setting');
-        drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
-      }
-
     }
   }
+  // Output page meta data.
+  if (!empty($ouput_data)) {
+    drupal_add_js(array('semi_anonymous_meta' => $ouput_data), 'setting');
+  }
 
+  // Add basic assets.
   if (variable_get('semi_anonymous_include', TRUE)) {
     drupal_add_js(libraries_get_path('json2') . '/json2.js');
     drupal_add_js(libraries_get_path('jStorage') . '/jstorage.min.js');
-
-    // Load user watching.
-    if (variable_get('semi_anonymous_store_user_origins', TRUE) && $type) {
-      drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.user.js');
-    }
   }
-  if (!empty($ouput_data)) {
-    drupal_add_js(array('semi_anonymous_meta' => $ouput_data), 'setting');
+
+  // Add tracking asset and setting.
+  if (variable_get($m . 'track_browsing', FALSE)) {
+    drupal_add_js(array('semi_anonymous' => array('track_browsing' => true)), 'setting');
+    drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
+  }
+
+  // Add user origin asset.
+  if (variable_get('semi_anonymous_store_user_origins', TRUE)) {
+    drupal_add_js(array('semi_anonymous' => array('user_deferred' => false)), 'setting');
+    drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.users.js');
   }
 }
 

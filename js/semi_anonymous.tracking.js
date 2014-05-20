@@ -6,7 +6,7 @@
 // Those functions in need of a little jQuery.
 (function ($) {
 
-  // Namespace internal functions.
+  // Namespace for functions.
   window.SemiAnon = window.SemiAnon || {};
 
   // Act on the page load.
