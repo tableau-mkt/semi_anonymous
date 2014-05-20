@@ -4,11 +4,14 @@
  */
 
 (function ($) {
+
   // Act on the page load.
   Drupal.behaviors.semi_anonymous_user = {
     attach: function (context) {
       if (context == document) {
 
+        // Data availability.
+        Drupal.settings.semi_anonymous.user_deferred = Drupal.settings.semi_anonymous.user_deferred || $.Deferred();
         // Init.
         var n = new Date().getTime(),
             hit = {};
@@ -28,8 +31,11 @@
           $.jStorage.set('user.origin', JSON.stringify(hit));
         }
 
+        // Reliable availability.
+        Drupal.settings.semi_anonymous.user_deferred.resolve();
+
       }
     }
-  };
+  }
 
 })(jQuery);
