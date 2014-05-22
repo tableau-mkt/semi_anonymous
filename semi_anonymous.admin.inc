@@ -39,7 +39,7 @@ function semi_anonymous_settings_form($form_state) {
         ':input[name="semi_anonymous_include"]' => array('checked' => FALSE),
       ),
     ),
-    '#title' => t('Store a user\'s origins'),
+    '#title' => t("Store a user's origins"),
     '#default_value' => variable_get('semi_anonymous_store_user_origins', TRUE),
     '#description' => t('Capture both the first page origin of this user AND the most recent session entry point, overwritten each time a page is directly visited with no referrer.'),
   );
@@ -52,7 +52,7 @@ function semi_anonymous_settings_form($form_state) {
     ),
     '#title' => t('Track user browsing'),
     '#default_value' => variable_get('semi_anonymous_track_page', FALSE),
-    '#description' => t('Store users\'s page browsing history in the user object.'),
+    '#description' => t("Store users's page browsing history in the user object."),
   );
   $form['user']['semi_anonymous_track_page_extent'] = array(
     '#type' => 'select',
@@ -71,7 +71,7 @@ function semi_anonymous_settings_form($form_state) {
        '0' => t('All'),
     ),
     '#default_value' => variable_get('semi_anonymous_track_page_extent', 25),
-    '#description' => t('Size of tracking history. '),
+    '#description' => t('Size of tracking history.'),
   );
   /*
   // @todo Merge other client-side user objects and stash them to avoid constant re-generation.

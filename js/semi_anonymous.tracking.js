@@ -7,7 +7,7 @@
 (function ($) {
 
   // Namespace for functions.
-  window.SemiAnon = window.SemiAnon || {};
+  Drupal.SemiAnon = Drupal.SemiAnon || {};
 
   // Act on the page load.
   Drupal.behaviors.semi_anonymous_tracking = {
@@ -16,18 +16,18 @@
 
         // Log browsing.
         if (Drupal.settings.semi_anonymous.track_browsing || Drupal.settings.semi_anonymous.track_term_hits) {
-          var return_val = {};
+          var returnVal = {};
 
           // Log page view.
           if (Drupal.settings.semi_anonymous.track_browsing) {
-            return_val['url'] = window.location.href;
+            returnVal['url'] = window.location.href;
           }
           // Log term hits.
           if (Drupal.settings.semi_anonymous.track_term_hits) {
-            return_val['taxonomy'] = Drupal.settings.semi_anonymous_meta.taxonomy
+            returnVal['taxonomy'] = Drupal.settings.semi_anonymous_meta.taxonomy
           }
           // Stash it.
-          SemiAnon.create_activity('browsing', JSON.stringify(return_val));
+          Drupal.SemiAnon.createActivity('browsing', JSON.stringify(returnVal));
         }
 
       }
@@ -35,8 +35,8 @@
   };
 
   // Look through browsing history and find user's top terms.
-  SemiAnon.get_favorite_terms = function() {
-    var results = SemiAnon.get_activities('browsing'),
+  Drupal.SemiAnon.getFavoriteTerms = function() {
+    var results = Drupal.SemiAnon.getActivities('browsing'),
         pages = [], // De-dupe.
         terms = {}; // Return.
 
@@ -48,17 +48,15 @@
         pages[record.url] = true;
         if (record.hasOwnProperty('taxonomy')) {
           // Walk through vocabs and terms.
-          $.each(record.taxonomy, function(voc_name, data) {
-            $.each(record.taxonomy[voc_name], function(tid, val) {
+          $.each(record.taxonomy, function(vocName, data) {
+            $.each(record.taxonomy[vocName], function(tid, val) {
               // Existing, add to count.
               if (terms.hasOwnProperty(tid)) {
-                terms[tid]['count']++;
+                terms[tid].count++;
               }
               else {
                 // New, add it on and create count.
-                terms[tid] = {};
-                terms[tid]['vocabulary'] = voc_name;
-                terms[tid]['count'] = 1;
+                terms[tid] = {vocabulary: vocName, count: 1};
               }
             });
           });
@@ -66,17 +64,24 @@
 
       }
     });
-    
-    // @todo Sort and reduce.
+
+    // @todo Sort and reduce. #3737
 
     return terms;
   };
 
-  // Access records of a specific tracking group.
-  SemiAnon.get_activities = function(group) {
+  /**
+   * Access records of a specific tracking group.
+   * 
+   * @param {string} group
+   *   Name of the tracking group to return values for.
+   * return {array}
+   *   List of tracking localStorage entries.
+   */
+  Drupal.SemiAnon.getActivities = function(group) {
     var results = $.jStorage.index();
 
-    if (group != false) {
+    if (group) {
       // Remove unwanted types (string beginning assumed).
       for(var i = 0; i < results.length; i++) {
         if (results[i].indexOf('track.' + group) != 0) {
@@ -91,9 +96,15 @@
     }
   };
 
-  // Put things in.
+  /** Put a tracking record into storage.
+   * 
+   * @param {string} group
+   *   Name of the tracking group to store the data as.
+   * @param {string} data
+   *   Blob of data to store. Recommended as JSON.stringify(myDataObject).
+   */
   // @todo Could allow TTL as an optional parameter.
-  SemiAnon.create_activity = function(group, data) {
+  Drupal.SemiAnon.createActivity = function(group, data) {
     // Place in storage.
     var n = new Date().getTime();
     // Log event.

@@ -1,5 +1,6 @@
 name = Semi Anonymous
-description = Provide space, add meta data, and handle stashing of client-side data to track and react to user behavior.
+description = Track in order to react to anonymous user behavior. Provide localStorage space, output meta data, store user origins, and handle stashing of client-side data.
 dependencies[] = libraries
+dependencies[] = jquery_update
 package = Other
 core = 7.x

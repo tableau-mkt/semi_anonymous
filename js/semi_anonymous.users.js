@@ -10,11 +10,12 @@
     attach: function (context) {
       if (context == document) {
 
-        // Data availability.
-        Drupal.settings.semi_anonymous.user_deferred = Drupal.settings.semi_anonymous.user_deferred || $.Deferred();
         // Init.
         var n = new Date().getTime(),
             hit = {};
+
+        // Data availability.
+        Drupal.settings.semi_anonymous.user_deferred = Drupal.settings.semi_anonymous.user_deferred || $.Deferred();
 
         // Stash the session entry point.
         if (!$.jStorage.get('user.session_origin') || !document.referrer) {
