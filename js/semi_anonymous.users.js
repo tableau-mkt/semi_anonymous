@@ -15,25 +15,25 @@
             hit = {};
 
         // Data availability.
-        Drupal.settings.semi_anonymous.user_deferred = Drupal.settings.semi_anonymous.user_deferred || $.Deferred();
+        Drupal.settings.semi_anonymous.userDeferred = Drupal.settings.semi_anonymous.userDeferred || $.Deferred();
 
         // Stash the session entry point.
         if (!$.jStorage.get('user.session_origin') || !document.referrer) {
-          hit['timestamp'] = n;
-          hit['url'] = window.location.href;
+          hit.timestamp = n;
+          hit.url = window.location.href;
           $.jStorage.set('user.session_origin', JSON.stringify(hit));
         }
 
         // Stash the deep origin.
         if (!$.jStorage.get('user.origin')) {
-          hit['timestamp'] = n;
-          hit['url'] = window.location.href;
-          hit['referrer'] = document.referrer;
+          hit.timestamp = n;
+          hit.url = window.location.href;
+          hit.referrer = document.referrer;
           $.jStorage.set('user.origin', JSON.stringify(hit));
         }
 
         // Reliable availability.
-        Drupal.settings.semi_anonymous.user_deferred.resolve();
+        Drupal.settings.semi_anonymous.userDeferred.resolve();
 
       }
     }
