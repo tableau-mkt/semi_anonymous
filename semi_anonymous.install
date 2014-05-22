@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall hooks for the Semi Anonymous module.
+ */
+
+
+/**
+ * Implements hook_uninstall().
+ */
+function semi_anonymous_page_uninstall() {
+  $variables = array(
+    'semi_anonymous_include',
+    'semi_anonymous_store_user_origins',
+    'semi_anonymous_track_page',
+    'semi_anonymous_track_page_extent',
+    'semi_anonymous_add_page_meta',
+    'semi_anonymous_track_term_hits',
+    'semi_anonymous_track_term_vocabs',
+    'semi_anonymous_generate_favorites',
+  );
+
+  foreach ($variables as $variable) {
+    variable_del($variable);
+  }
+}

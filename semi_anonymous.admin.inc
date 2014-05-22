@@ -57,8 +57,9 @@ function semi_anonymous_settings_form($form_state) {
   $form['user']['semi_anonymous_track_page_extent'] = array(
     '#type' => 'select',
     '#states' => array(
-      'disabled' => array(
-        ':input[name="semi_anonymous_include"]' => array('checked' => FALSE),
+      'enbled' => array(
+        ':input[name="semi_anonymous_include"]' => array('checked' => TRUE),
+        ':input[name="semi_anonymous_track_page"]' => array('checked' => TRUE),
       ),
     ),
     '#title' => t('How far back to track'),

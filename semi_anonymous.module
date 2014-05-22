@@ -14,6 +14,7 @@ function semi_anonymous_help($path, $arg) {
   }
 }
 
+
 /**
  * Implements hook_menu().
  */
@@ -30,6 +31,7 @@ function semi_anonymous_menu() {
 
   return $items;
 }
+
 
 /**
  * Implements hook_page_alter().
@@ -91,8 +93,26 @@ function semi_anonymous_page_alter(&$page) {
 
   // Add basic assets.
   if (variable_get('semi_anonymous_include', TRUE)) {
-    drupal_add_js(libraries_get_path('json2') . '/json2.js');
-    drupal_add_js(libraries_get_path('jStorage') . '/jstorage.min.js');
+    // JSON2.
+    if (function_exists('libraries_load')) {
+      libraries_load('json2');
+    }
+    else {
+      $json_path = libraries_get_path('json2');
+      if (!empty($json_path) && file_exists($json_path . '/json2.js')) {
+        drupal_add_js($json_path . '/json2.js');
+      }
+    }
+    // jStorage.
+    if (function_exists('libraries_load')) {
+      libraries_load('json2');
+    }
+    else {
+      $json_path = libraries_get_path('jstorage');
+      if (!empty($json_path) && file_exists($json_path . '/jstorage.js')) {
+        drupal_add_js($json_path . '/jstorage.min.js');
+      }
+    }
   }
 
   // Add tracking asset and setting.
@@ -111,6 +131,7 @@ function semi_anonymous_page_alter(&$page) {
 
 /**
  * Utility function to agnosticly get the current menu object.
+ * Structured like menu_get_object(), but the passed type will be set for you.
  * 
  * @param string (reference) $return_type
  * 
@@ -134,7 +155,7 @@ function _semi_anonymous_menu_get_any_object(&$return_type) {
   }
 
   // Many happy returns.
-  if($type && $obj = menu_get_object($type, $arg_position)) {
+  if ($type && $obj = menu_get_object($type, $arg_position)) {
     if(is_object($obj)) {
       $return_type = $type;
       return $obj;
@@ -165,7 +186,7 @@ function _semi_anonymous_menu_get_any_object(&$return_type) {
  */
 function _semi_anonymous_get_entity_terms($entity_type, $bundle, $entity) {
   $terms = array();
-  $vocabs = variable_get('semi_anonymous_track_term_vocabs');
+  $vocabs = variable_get('semi_anonymous_track_term_vocabs', array());
 
   // Use very lightweight field info list to find relevant fields.
   foreach (field_info_field_map() as $field_name => $field_info) {
