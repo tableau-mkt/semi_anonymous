@@ -12,19 +12,19 @@
   // Act on the page load.
   Drupal.behaviors.semi_anonymous_tracking = {
     attach: function (context, settings) {
-      if (context == document) {
+      if (context === document) {
 
         // Log browsing.
-        if (Drupal.settings.semi_anonymous.track_browsing || Drupal.settings.semi_anonymous.track_term_hits) {
+        if (settings.semi_anonymous.track_browsing || settings.semi_anonymous.track_term_hits) {
           var returnVal = {};
 
           // Log page view.
-          if (Drupal.settings.semi_anonymous.track_browsing) {
-            returnVal['url'] = window.location.href;
+          if (settings.semi_anonymous.track_browsing) {
+            returnVal.url = window.location.href;
           }
           // Log term hits.
-          if (Drupal.settings.semi_anonymous.track_term_hits) {
-            returnVal['taxonomy'] = Drupal.settings.semi_anonymous_meta.taxonomy
+          if (settings.semi_anonymous.track_term_hits) {
+            returnVal.taxonomy = settings.semi_anonymous_meta.taxonomy;
           }
           // Stash it.
           Drupal.SemiAnon.createActivity('browsing', JSON.stringify(returnVal));
@@ -35,7 +35,7 @@
   };
 
   // Look through browsing history and find user's top terms.
-  Drupal.SemiAnon.getFavoriteTerms = function() {
+  Drupal.SemiAnon.getFavoriteTerms = function () {
     var results = Drupal.SemiAnon.getActivities('browsing'),
         pages = [], // De-dupe.
         terms = {}; // Return.
@@ -48,8 +48,8 @@
         pages[record.url] = true;
         if (record.hasOwnProperty('taxonomy')) {
           // Walk through vocabs and terms.
-          $.each(record.taxonomy, function(vocName, data) {
-            $.each(record.taxonomy[vocName], function(tid, val) {
+          $.each(record.taxonomy, function (vocName, data) {
+            $.each(record.taxonomy[vocName], function (tid, val) {
               // Existing, add to count.
               if (terms.hasOwnProperty(tid)) {
                 terms[tid].count++;
@@ -78,17 +78,17 @@
    * return {array}
    *   List of tracking localStorage entries.
    */
-  Drupal.SemiAnon.getActivities = function(group) {
+  Drupal.SemiAnon.getActivities = function (group) {
     var results = $.jStorage.index();
 
     if (group) {
       // Remove unwanted types (string beginning assumed).
       for(var i = 0; i < results.length; i++) {
-        if (results[i].indexOf('track.' + group) != 0) {
+        if (results[i].indexOf('track.' + group) !== 0) {
           results.splice(i, 1);
           i--;
         }
-      };
+      }
       return results;
     }
     else {
@@ -104,11 +104,11 @@
    *   Blob of data to store. Recommended as JSON.stringify(myDataObject).
    */
   // @todo Could allow TTL as an optional parameter.
-  Drupal.SemiAnon.createActivity = function(group, data) {
+  Drupal.SemiAnon.createActivity = function (group, data) {
     // Place in storage.
     var n = new Date().getTime();
     // Log event.
-    $.jStorage.set('track.' + group + '.' + n, data)
+    $.jStorage.set('track.' + group + '.' + n, data);
   };
 
 })(jQuery);

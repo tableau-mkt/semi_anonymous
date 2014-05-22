@@ -8,7 +8,7 @@
   // Act on the page load.
   Drupal.behaviors.semi_anonymous_user = {
     attach: function (context) {
-      if (context == document) {
+      if (context === document) {
 
         // Init.
         var n = new Date().getTime(),
@@ -37,6 +37,6 @@
 
       }
     }
-  }
+  };
 
 })(jQuery);
