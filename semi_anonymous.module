@@ -49,7 +49,7 @@ function semi_anonymous_preprocess_html(&$variables) {
       if(variable_get($m . 'add_page_meta', FALSE) && $type) {
         // Explicit additions.
         $ouput_data['tnid'] = (isset($obj->tnid)) ? $obj->tnid : false;
-        $ouput_data['entity_type'] = $type;
+        $ouput_data['entityType'] = $type;
         $ouput_data['bundle'] = (isset($obj->type)) ? $obj->type : false;
 
         // Output various entity properties. Allow additions/alterations.
@@ -63,14 +63,18 @@ function semi_anonymous_preprocess_html(&$variables) {
         }
       }
 
-      // Allow for term tracking.
-      if (variable_get($m . 'track_term_hits', FALSE)) {
+      // Output term tracking.
+      if (variable_get($m . 'output_terms', FALSE)) {
         // Tell the client-side which tags are present on this entity.
         if (isset($obj->type)) {
           if ($terms = _semi_anonymous_get_entity_terms($type, $obj->type, $obj)) {
             $ouput_data['taxonomy'] = $terms;
           }
         }
+      }
+
+      // Allow for term tracking.
+      if (variable_get($m . 'track_term_hits', FALSE)) {
         drupal_add_js(array('semi_anonymous' => array('track_term_hits' => true)), 'setting');
         drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
       }
@@ -82,7 +86,7 @@ function semi_anonymous_preprocess_html(&$variables) {
   }
 
   // Add basic assets.
-  if (variable_get('semi_anonymous_include', TRUE)) {
+  if (variable_get($m . 'include', TRUE)) {
     // JSON2.
     if (function_exists('libraries_load')) {
       libraries_load('json2');
@@ -112,7 +116,7 @@ function semi_anonymous_preprocess_html(&$variables) {
   }
 
   // Add user origin asset.
-  if (variable_get('semi_anonymous_store_user_origins', TRUE)) {
+  if (variable_get($m . 'store_user_origins', TRUE)) {
     drupal_add_js(array('semi_anonymous' => array('user_deferred' => false)), 'setting');
     drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.users.js');
   }
@@ -207,19 +211,16 @@ function _semi_anonymous_get_entity_terms($entity_type, $bundle, $entity) {
         if (isset($entity->{$field_name})) {
           // Collect terms from fields for return.
           $values = field_get_items($entity_type, $entity, $field_name);
-          foreach ((array)$values as $tid) {
-            if ($tid) {
+          foreach ((array)$values as $termArray) {
+            if (isset($termArray['tid'])) {
               // Limit to selected vocabs.
-              $term = taxonomy_term_load($tid['tid']);
-              if ($vocabs[$term->vocabulary_machine_name] != '0') {
-                $terms[$term->vocabulary_machine_name][$term->tid] = $term->name;
-              }
+              $term = taxonomy_term_load($termArray['tid']);
+              $terms[$term->vocabulary_machine_name][$term->tid] = $term->name;
             }
           }
         }
       }
     }
   }
-
   return $terms;
 }
