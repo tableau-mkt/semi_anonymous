@@ -20,17 +20,18 @@ To stash a single user property it's recommended to use a `user.property` key fo
 interaction, data is stashed in JSON format, duh. One of the most basic features is just knowing
 where a user came from. Find that info organized like this...
 ```json
-"user.origin" : {
-  "url" : "http://www.mysite.com/some-great-page?param=value",
-  "timestamp" : "398649600",
-  "referrer" : "http://www.anothersite.com/their-linking-page"
-},
-"user.session_origin" : {
-  "url" : "http://www.mysite.com/recent-entry-point",
-  "timestamp" : "398649999"
+{
+  "user.origin" : {
+    "url" : "http://www.mysite.com/some-great-page?param=value",
+    "timestamp" : "398649600",
+    "referrer" : "http://www.anothersite.com/their-linking-page"
+  },
+  "user.session_origin" : {
+    "url" : "http://www.mysite.com/recent-entry-point",
+    "timestamp" : "398649999"
+  }
 }
 ```
-_(outer brackets omitted for space)_
 
 To access it, it's recommended that you wait until the user object is available. There can be a
 very small amount of time associated with jQuery + jStorage setup, and this keeps JS include order
@@ -38,7 +39,6 @@ irrelevant which is good for robustness.
 ```javascript
 (function ($) {
   $(document).ready(function() {
-
     // Ensure data availability.
     Drupal.settings.semi_anonymous.userDeferred = Drupal.settings.semi_anonymous.userDeferred || $.Deferred();
     Drupal.settings.semi_anonymous.user_deferred.done(function () {
@@ -62,20 +62,22 @@ about the pages of our site. Yes, you might be able to get this from the DOM, bu
 You can pipe out whatever data you want in a custom module by implementing the
 `hook_semi_anonymous_output_properties()` function. Here's _some_ of what's available by default.
 ```json
-"nid" : "123",
-"title" : "My Cool Page",
-"entityType" : "node",
-"bundle" : "article",
-"uid" : "555",
-"language" : "en",
-"taxonomy" : {
-  "special_category" : {
-    "25" : "Term Name",
-    "26" : "Another Term"
-  }
-  "my_types" : {
-    "13" : "Some Tag",
-    "14" : "Another Tag"
+{
+  "nid" : "123",
+  "title" : "My Cool Page",
+  "entityType" : "node",
+  "bundle" : "article",
+  "uid" : "555",
+  "language" : "en",
+  "taxonomy" : {
+    "special_category" : {
+      "25" : "Term Name",
+      "26" : "Another Term"
+    }
+    "my_types" : {
+      "13" : "Some Tag",
+      "14" : "Another Tag"
+    }
   }
 }
 ```
@@ -95,15 +97,17 @@ _(jQuery wrapper and user deferred object omitted)_
 ##Activity Tracking
 A user's browsing history is stored per page view. Example shown includes taxonomy term hit tracking enabled.
 ```json
-"track.browsing.398649600" : {
-  "url" : "http://www.mysite.com/some-great-page",
-  "taxonomy" : {
-    "my_category" : {
-      "25" : "Term Name",
-      "26" : "Another Term"
-    }
-    "my_types" : {
-      "13" : "Some Tag"
+{
+  "track.browsing.398649600" : {
+    "url" : "http://www.mysite.com/some-great-page",
+    "taxonomy" : {
+      "my_category" : {
+        "25" : "Term Name",
+        "26" : "Another Term"
+      }
+      "my_types" : {
+        "13" : "Some Tag"
+      }
     }
   }
 }
@@ -137,12 +141,14 @@ Drupal.SemiAnon.getActivities('my_activity');
 
 They will be stored and come back like this; filtered down to the group specified.
 ```json
-"track.my_activity.398649600" : {
-  "linkText" : "Link text from page",
-  "myProperty" : "the-property-value"
-}
-"track.my_activity.398649999" : {
-  "linkText" : "Other link text",
-  "myProperty" : "this-property-value"
+{
+  "track.my_activity.398649600" : {
+    "linkText" : "Link text from page",
+    "myProperty" : "the-property-value"
+  }
+  "track.my_activity.398649999" : {
+    "linkText" : "Other link text",
+    "myProperty" : "this-property-value"
+  }
 }
 ```
