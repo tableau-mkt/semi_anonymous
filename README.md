@@ -1,43 +1,56 @@
-Semi Anonymous Drupal module
+Semi Anonymous
 ==============
 
-Track in order to react to anonymous user behavior.
-Provide localStorage space, output meta data, store user origins, and handle stashing of client-side data.
+Track in order to react to anonymous user behavior. This Drupal module provides localStorage space,
+outputs meta data, stores user origins, and handles stashing of client-side activity data.
 
-##User Info
-For ease of interaction, data is stashed in JSON format, duh. One of the most basic featurse is just
-knowing where a user came from.
-```json
-{
-  "user.origin" : {
-    "url" : "http://www.mysite.com/some-great-page",
-    "timestamp" : "55555",
-    "referrer" : "http://www.anothersite.com/their-linking-page"
-  }
-  "user.session_origin" : {
-    "url" : "http://www.mysite.com/recent-entry-point",
-    "timestamp" : "55555"
-  }
-}
+##Local Storage
+This module sets up the key/value jStorage localStorage abstraction library, which is super easy to use.
+See the jStorage site for more info: http://www.jstorage.info.
+```javascript
+// Set a value on one page.
+$.jStorage.set('mySpecialValue', JSON.stringify('neato'));
+
+// Get it on some later page.
+var myVal = JSON.parse($.jStorage.get('mySpecialValue'));
 ```
 
-It's recommended that you wait until the use object is available. Here's some same JS code.
+##User Info
+To stash a single user property it's recommended to use a `user.property` key format. For ease of
+interaction, data is stashed in JSON format, duh. One of the most basic features is just knowing
+where a user came from. Find that info organized like this...
+```json
+"user.origin" : {
+  "url" : "http://www.mysite.com/some-great-page?param=value",
+  "timestamp" : "398649600",
+  "referrer" : "http://www.anothersite.com/their-linking-page"
+},
+"user.session_origin" : {
+  "url" : "http://www.mysite.com/recent-entry-point",
+  "timestamp" : "398649999"
+}
+```
+_(outer brackets omitted for space)_
+
+To access it, it's recommended that you wait until the user object is available. There can be a
+very small amount of time associated with jQuery + jStorage setup, and this keeps JS include order
+irrelevant which is good for robustness.
 ```javascript
-(function($) {
+(function ($) {
   $(document).ready(function() {
-    Drupal.settings.semi_anonymous.userDeferred = Drupal.settings.semi_anonymous.userDeferred || $.Deferred();
+
     // Ensure data availability.
+    Drupal.settings.semi_anonymous.userDeferred = Drupal.settings.semi_anonymous.userDeferred || $.Deferred();
     Drupal.settings.semi_anonymous.user_deferred.done(function () {
 
-      // Access data stored in localStorage like this.
-      // See the jStorage site for more info: http://www.jstorage.info
+      // Grab the user property.
       var origin = JSON.parse($.jStorage.get('user.origin'));
 
       // Store your own items.
       myObj.something = 'Special info';
       myObj.anotherThing = 'More info';
       $.jStorage.set('user.thing', JSON.stringify(myObj));
-  
+
     }
   });
 })(jQuery);
@@ -47,54 +60,50 @@ It's recommended that you wait until the use object is available. Here's some sa
 In order to do fun and fancy things on the client-side it's nice to have easy access to the meta data
 about the pages of our site. Yes, you might be able to get this from the DOM, but it's good to be sure.
 You can pipe out whatever data you want in a custom module by implementing the
-hook_semi_anonymous_output_properties() function. Here's some of what's available by default.
+`hook_semi_anonymous_output_properties()` function. Here's _some_ of what's available by default.
 ```json
-{
-  "nid" : "123",
-  "title" : "My Cool Page",
-  "uid" : "555",
-  "language" : "en",
-  "taxonomy" : {
-    "special_category" : {
-      "25" : "Term Name",
-      "26" : "Another Term"
-    }
-    "my_types" : {
-      "13" : "Some Tag",
-      "14" : "Another Tag"
-    }
+"nid" : "123",
+"title" : "My Cool Page",
+"entityType" : "node",
+"bundle" : "article",
+"uid" : "555",
+"language" : "en",
+"taxonomy" : {
+  "special_category" : {
+    "25" : "Term Name",
+    "26" : "Another Term"
+  }
+  "my_types" : {
+    "13" : "Some Tag",
+    "14" : "Another Tag"
   }
 }
 ```
 
-Grab ahold of those goodies.
+Grab a hold of these available goodies.
 ```javascript
-(function($) {
-  $(document).ready(function() {
+var pageAuthorUID = Drupal.settings.semi_anonymous_meta.uid,
+    pageTitle = Drupal.settings.semi_anonymous_meta.title,
+    pageLanguage = Drupal.settings.semi_anonymous_meta.language;
 
-    // Access meta data like this.
-    var pageAuthorUID = Drupal.settings.semi_anonymous_meta.uid,
-        pageTitle = Drupal.settings.semi_anonymous_meta.title,
-        pageLanguage = Drupal.settings.semi_anonymous_meta.language;
-
-  });
-})(jQuery);
+if (typeof Drupal.settings.semi_anonymous_meta.taxonomy.my_category !== 'undefined') {
+  var hasSomeTerm = Drupal.settings.semi_anonymous_meta.taxonomy.my_category.hasOwnProperty('1747');
+}
 ```
+_(jQuery wrapper and user deferred object omitted)_
 
 ##Activity Tracking
-User's browsing history is stored like this. Example shown with taxonomy term hit tracking enabled.
+A user's browsing history is stored per page view. Example shown includes taxonomy term hit tracking enabled.
 ```json
-{
-  "track.browing.55555" : {
-    "url" : "http://www.mysite.com/some-great-page",
-    "taxonomy" : {
-      "my_category" : {
-        "25" : "Term Name",
-        "26" : "Another Term"
-      }
-      "my_types" : {
-        "13" : "Some Tag"
-      }
+"track.browsing.398649600" : {
+  "url" : "http://www.mysite.com/some-great-page",
+  "taxonomy" : {
+    "my_category" : {
+      "25" : "Term Name",
+      "26" : "Another Term"
+    }
+    "my_types" : {
+      "13" : "Some Tag"
     }
   }
 }
@@ -104,48 +113,36 @@ User's browsing history is stored like this. Example shown with taxonomy term hi
 Because we know how many times a person has seem specific tags, we can infer a person's favorite
 terms from their browing history. NOTE: Your tracking history storage settings.
 ```javascript
-(function($) {
-  $(document).ready(function() {
-    Drupal.settings.semi_anonymous.userDeferred = Drupal.settings.semi_anonymous.userDeferred || $.Deferred();
-    // Ensure data availability.
-    Drupal.settings.semi_anonymous.user_deferred.done(function () {
-      var favTerms = Drupal.SemiAnon.getFavoriteTerms();
-      doSomeCoolAjaxThing(favTerms.my_category);
-    }
-  });
-})(jQuery);
+var favTerms = Drupal.SemiAnon.getFavoriteTerms();
+if (typeof favTerms.my_category != 'undefined') {
+  doSomeCoolAjaxThing(favTerms.my_category);
+}
 ```
+_(jQuery wrapper and user deferred object omitted)_
 
 ##Custom Tracking
-It's recommended that you wait until the use object is available. Here's some same JS code.
+You can register our own tracking activities like this...
 ```javascript
-(function($) {
-  $(document).ready(function() {
+// Track your own activities.
+$( ".my-special-links" ).bind( "click", function (e) {
+  e.preventDefault();
+  myObj.linkText = $(this).text()
+  myObj.myProperty = $(this).attr('data-property');
+  Drupal.SemiAnon.createActivity = function ('my_activity', myObj);
+});
 
-      // Track your own activities.
-      $( ".my-special-links" ).bind( "click", function() {
-        myObj.linkText = $(this).text()
-        myObj.myProperty = $(this).attr('data-property');
-        Drupal.SemiAnon.createActivity = function ('my_activity', myObj);
-      });
-
-      // Retrieve them.
-      Drupal.SemiAnon.getActivities('my_activity');
-
-  });
-})(jQuery);
+// Retrieve them.
+Drupal.SemiAnon.getActivities('my_activity');
 ```
 
-They will be stored, and come back, like this. But filtered down to the group specified.
+They will be stored and come back like this; filtered down to the group specified.
 ```json
-{
-  "track.my_activity.12345" : {
-    "linkText" : "Link text from page",
-    "myProperty" : "the-property-value"
-  }
-  "track.my_activity.12999" : {
-    "linkText" : "Other link text",
-    "myProperty" : "this-property-value"
-  }
+"track.my_activity.398649600" : {
+  "linkText" : "Link text from page",
+  "myProperty" : "the-property-value"
+}
+"track.my_activity.398649999" : {
+  "linkText" : "Other link text",
+  "myProperty" : "this-property-value"
 }
 ```
