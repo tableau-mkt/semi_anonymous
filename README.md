@@ -9,10 +9,10 @@ This module sets up the key/value jStorage localStorage abstraction library, whi
 See the jStorage site for more info: http://www.jstorage.info.
 ```javascript
 // Set a value on one page.
-$.jStorage.set('mySpecialValue', JSON.stringify('neato'));
+$.jStorage.set('mySpecialValue', 'neato');
 
 // Get it on some later page.
-var myVal = JSON.parse($.jStorage.get('mySpecialValue'));
+var myVal = $.jStorage.get('mySpecialValue');
 ```
 
 ##User Info
@@ -33,9 +33,9 @@ where a user came from. Find that info organized like this...
 }
 ```
 
-To access it, it's recommended that you wait until the user object is available. There can be a
-very small amount of time associated with jQuery + jStorage setup, and this keeps JS include order
-irrelevant which is good for robustness.
+To access user storage, it's recommended that you wait until the object is available. There can be a
+very small amount of time associated with jQuery + jStorage setup, additionally this keeps JS include
+order irrelevant which is good for robustness.
 ```javascript
 (function ($) {
   $(document).ready(function() {
@@ -45,12 +45,15 @@ irrelevant which is good for robustness.
 
       // Grab the user property.
       var origin = JSON.parse($.jStorage.get('user.origin'));
+      alert(origin.url);
 
       // Store your own items.
-      myObj.something = 'Special info';
-      myObj.anotherThing = 'More info';
+      myObj.thingComponent = 'Some component';
+      myObj.anotherComponent = 'Another component';
       $.jStorage.set('user.thing', JSON.stringify(myObj));
 
+      // Get it on some later page.
+      var myVal = JSON.parse($.jStorage.get('user.thing'));
     }
   });
 })(jQuery);
@@ -73,7 +76,7 @@ You can pipe out whatever data you want in a custom module by implementing the
     "special_category" : {
       "25" : "Term Name",
       "26" : "Another Term"
-    }
+    },
     "my_types" : {
       "13" : "Some Tag",
       "14" : "Another Tag"
@@ -89,13 +92,12 @@ var pageAuthorUID = Drupal.settings.semi_anonymous_meta.uid,
     pageLanguage = Drupal.settings.semi_anonymous_meta.language;
 
 if (typeof Drupal.settings.semi_anonymous_meta.taxonomy.my_category !== 'undefined') {
-  var hasSomeTerm = Drupal.settings.semi_anonymous_meta.taxonomy.my_category.hasOwnProperty('1747');
+  var pageHasSomeTerm = Drupal.settings.semi_anonymous_meta.taxonomy.my_category.hasOwnProperty('25');
 }
 ```
-_(jQuery wrapper and user deferred object omitted)_
 
 ##Activity Tracking
-A user's browsing history is stored per page view. Example shown includes taxonomy term hit tracking enabled.
+A user's browsing history is stored per page view. This is an example record which includes taxonomy term hit tracking enabled.
 ```json
 {
   "track.browsing.398649600" : {
@@ -104,13 +106,20 @@ A user's browsing history is stored per page view. Example shown includes taxono
       "my_category" : {
         "25" : "Term Name",
         "26" : "Another Term"
-      }
+      },
       "my_types" : {
         "13" : "Some Tag"
       }
     }
   }
 }
+```
+
+Grab a hold of browsing history and work with it like this...
+```javascript
+$.each(Drupal.SemiAnon.getActivities('browsing'), function (i, val) {
+  someComparison(val.url);
+});
 ```
 
 ###Favorite Terms
@@ -122,7 +131,6 @@ if (typeof favTerms.my_category != 'undefined') {
   doSomeCoolAjaxThing(favTerms.my_category);
 }
 ```
-_(jQuery wrapper and user deferred object omitted)_
 
 ##Custom Tracking
 You can register our own tracking activities like this...
@@ -145,7 +153,7 @@ They will be stored and come back like this; filtered down to the group specifie
   "track.my_activity.398649600" : {
     "linkText" : "Link text from page",
     "myProperty" : "the-property-value"
-  }
+  },
   "track.my_activity.398649999" : {
     "linkText" : "Other link text",
     "myProperty" : "this-property-value"
