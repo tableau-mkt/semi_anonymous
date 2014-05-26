@@ -118,7 +118,8 @@ A user's browsing history is stored per page view. This is an example record whi
 Grab a hold of browsing history and work with it like this...
 ```javascript
 $.each(Drupal.SemiAnon.getActivities('browsing'), function (i, val) {
-  someComparison(val.url);
+  var item = JSON.parse($.jStorage.get(val));
+  someComparison(item.url);
 });
 ```
 
@@ -136,7 +137,7 @@ if (typeof favTerms.my_category != 'undefined') {
 You can register our own tracking activities like this...
 ```javascript
 // Track your own activities.
-$( ".my-special-links" ).bind( "click", function (e) {
+$( ".my-special-links" ).bind("click", function (e) {
   e.preventDefault();
   myObj.linkText = $(this).text()
   myObj.myProperty = $(this).attr('data-property');
@@ -144,7 +145,10 @@ $( ".my-special-links" ).bind( "click", function (e) {
 });
 
 // Retrieve them.
-Drupal.SemiAnon.getActivities('my_activity');
+$.each(Drupal.SemiAnon.getActivities('my_activity'), function (i, val) {
+  var item = JSON.parse($.jStorage.get(val));
+  someComparison(item.url);
+});
 ```
 
 They will be stored and come back like this; filtered down to the group specified.

@@ -48,25 +48,43 @@ function semi_anonymous_preprocess_html(&$variables) {
       // Drop page meta data onto output object.
       if(variable_get($m . 'add_page_meta', FALSE) && $type) {
         // Explicit additions.
-        $ouput_data['tnid'] = (isset($obj->tnid)) ? $obj->tnid : false;
+        // Add new items to the array in _semi_anonymous_collect_meta().
         $ouput_data['entityType'] = $type;
         $ouput_data['bundle'] = (isset($obj->type)) ? $obj->type : false;
 
         // Output various entity properties. Allow additions/alterations.
         // NOTE: Properties mean different things on different entity types.
-        $properties = module_invoke_all('semi_anonymous_outout_properties');
-        drupal_alter('semi_anonymous_output_properties', $properties);
+        $properties = _semi_anonymous_collect_meta();
+        $selected_properties = variable_get('semi_anonymous_track_meta');
+
         foreach ($properties as $p) {
+          // Include all in output, only entity valid.
           if (isset($obj->$p)) {
             $ouput_data[$p] = $obj->$p;
           }
         }
+
+        // If tracking meta data is specifically selected.
+        if (count($selected_properties) > 0) {
+          $tracking = array();
+          foreach ($ouput_data as $prop => $value) {
+            if ($selected_properties[$prop] !== 0) {
+              $tracking[] = $prop;
+            }
+          }
+          drupal_add_js(array('semi_anonymous_tracking' => $tracking), 'setting');
+        }
       }
 
       // Output term tracking.
-      if (variable_get($m . 'output_terms', FALSE)) {
-        // Tell the client-side which tags are present on this entity.
-        if (isset($obj->type)) {
+      // Tell the client-side which tags are present on this entity.
+      if (variable_get($m . 'track_page', FALSE)) {
+        // Meta data while on a term page.
+        if ($type == 'taxonomy_term') {
+          $ouput_data['taxonomy'] = array($obj->vocabulary_machine_name => $obj->tid);
+        }
+        else {
+          // Meta data on content.
           if ($terms = _semi_anonymous_get_entity_terms($type, $obj->type, $obj)) {
             $ouput_data['taxonomy'] = $terms;
           }
@@ -124,14 +142,36 @@ function semi_anonymous_preprocess_html(&$variables) {
 
 
 /**
- * Implements hook_semi_anonymous_output_properties().
+ * Collects up meta data for output.
  */
-function semi_anonymous_semi_anonymous_output_properties() {
+function _semi_anonymous_collect_meta() {
+  // Avoid duplicate builds.
+  $properties = &drupal_static(__FUNCTION__);
+  if (!isset($properties)) {
+    $properties = array('entityType', 'bundle');
+    foreach (module_implements('semi_anonymous_meta') as $module) {
+      // Call modules implementing semi_anonymous_meta() and combine results.
+      $properties = array_merge($properties,
+        module_invoke($module, 'semi_anonymous_meta')
+      );
+    }
+    drupal_alter('semi_anonymous_meta', $properties);
+  }
+
+  return $properties;
+}
+
+
+/**
+ * Implements hook_semi_anonymous_meta().
+ * Defines default meta data.
+ */
+function semi_anonymous_semi_anonymous_meta() {
   return array(
     'title',
     'language',
-    'bundle',
     'nid',
+    'tnid',
     'tid',
     'vid',
     'name',
@@ -212,15 +252,18 @@ function _semi_anonymous_get_entity_terms($entity_type, $bundle, $entity) {
           // Collect terms from fields for return.
           $values = field_get_items($entity_type, $entity, $field_name);
           foreach ((array)$values as $termArray) {
-            if (isset($termArray['tid'])) {
-              // Limit to selected vocabs.
-              $term = taxonomy_term_load($termArray['tid']);
-              $terms[$term->vocabulary_machine_name][$term->tid] = $term->name;
+            // Limit to existant tids.
+            if (isset($termArray['tid']) && $term = taxonomy_term_load($termArray['tid'])) {
+              // Limit configured vocabs.
+              if ($vocabs[$term->vocabulary_machine_name]) {
+                $terms[$term->vocabulary_machine_name][$term->tid] = $term->name;
+              }
             }
           }
         }
       }
     }
   }
+
   return $terms;
 }

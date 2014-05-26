@@ -4,12 +4,16 @@
  * Form callback for module configuration.
  */
 function semi_anonymous_settings_form($form_state) {
+  // Init.
   $form = array();
+  // Setup vocabs.
   $vocabs = taxonomy_get_vocabularies();
   $v_options = array();
   foreach ($vocabs as $v) {
     $v_options[$v->machine_name] = $v->name;
   }
+  // Get available meta data.
+  $meta_data = _semi_anonymous_collect_meta();
 
   $form['global'] = array(
     '#type' => 'fieldset',
@@ -43,7 +47,7 @@ function semi_anonymous_settings_form($form_state) {
     '#default_value' => variable_get('semi_anonymous_store_user_origins', TRUE),
     '#description' => t('Capture both the first page origin of this user AND the most recent session entry point, overwritten each time a page is directly visited with no referrer.'),
   );
-  $form['user']['semi_anonymous_track_page'] = array(
+  $form['user']['semi_anonymous_track_browsing'] = array(
     '#type' => 'checkbox',
     '#states' => array(
       'disabled' => array(
@@ -51,10 +55,10 @@ function semi_anonymous_settings_form($form_state) {
       ),
     ),
     '#title' => t('Track user browsing'),
-    '#default_value' => variable_get('semi_anonymous_track_page', FALSE),
+    '#default_value' => variable_get('semi_anonymous_track_browsing', FALSE),
     '#description' => t("Store users's page browsing history in the user object."),
   );
-  $form['user']['semi_anonymous_track_page_extent'] = array(
+  $form['user']['semi_anonymous_track_browsing_extent'] = array(
     '#type' => 'select',
     '#states' => array(
       'enbled' => array(
@@ -70,7 +74,7 @@ function semi_anonymous_settings_form($form_state) {
        '100' => t('100 items'),
        '0' => t('All'),
     ),
-    '#default_value' => variable_get('semi_anonymous_track_page_extent', 25),
+    '#default_value' => variable_get('semi_anonymous_track_browsing_extent', 25),
     '#description' => t('Size of tracking history.'),
   );
   /*
@@ -100,14 +104,16 @@ function semi_anonymous_settings_form($form_state) {
   );
   $form['content']['semi_anonymous_add_page_meta'] = array(
     '#type' => 'checkbox',
-    '#states' => array(
-      'enabled' => array(
-        ':input[name="semi_anonymous_include"]' => array('checked' => TRUE),
-      ),
-    ),
     '#title' => t('Add entity meta data'),
     '#default_value' => variable_get('semi_anonymous_add_page_meta', FALSE),
     '#description' => t('Make entity meta data available for client-side reaction.'),
+  );
+  $form['content']['track_meta'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Tracking Meta Data'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('The meta data details to store when tracking browsing history. Marking none will track all.'),
   );
   $form['content']['semi_anonymous_output_terms'] = array(
     '#type' => 'checkbox',
@@ -120,17 +126,16 @@ function semi_anonymous_settings_form($form_state) {
     '#default_value' => variable_get('semi_anonymous_output_terms', FALSE),
     '#description' => t('Make taxonomy term data available for client-side use.'),
   );
-  $form['content']['track_vocabs']['semi_anonymous_track_term_vocabs'] = array(
+  $form['content']['track_meta']['semi_anonymous_track_meta'] = array(
     '#type' => 'checkboxes',
     '#states' => array(
       'enabled' => array(
-        ':input[name="semi_anonymous_track_term_hits"]' => array('checked' => TRUE),
+        ':input[name="semi_add_page_meta"]' => array('checked' => TRUE),
       ),
     ),
-    '#title' => t('Vocabs to output/track'),
-    '#default_value' => variable_get('semi_anonymous_track_term_vocabs', 0),
-    '#options' => $v_options,
-    '#description' => t('The vocabs which should be output and tracked when recording "hits" to terms on content.'),
+    '#title' => t('Meta data items'),
+    '#default_value' => variable_get('semi_anonymous_track_meta', 0),
+    '#options' => drupal_map_assoc($meta_data),
   );
   $form['content']['semi_anonymous_track_term_hits'] = array(
     '#type' => 'checkbox',
@@ -145,9 +150,21 @@ function semi_anonymous_settings_form($form_state) {
   );
   $form['content']['track_vocabs'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Vocabs to track'),
+    '#title' => t('Vocabularies'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
+  );
+  $form['content']['track_vocabs']['semi_anonymous_track_term_vocabs'] = array(
+    '#type' => 'checkboxes',
+    '#states' => array(
+      'enabled' => array(
+        ':input[name="semi_anonymous_track_term_hits"]' => array('checked' => TRUE),
+      ),
+    ),
+    '#title' => t('Vocabulary'),
+    '#default_value' => variable_get('semi_anonymous_track_term_vocabs', 0),
+    '#options' => $v_options,
+    '#description' => t('The vocabularies which should be output as meta data and tracked when recording "hits" to terms on content.'),
   );
   $form['content']['semi_anonymous_generate_favorites'] = array(
     '#type' => 'checkbox',
