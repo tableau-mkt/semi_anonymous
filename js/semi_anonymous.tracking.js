@@ -51,7 +51,12 @@
     }
   };
 
-  // Look through browsing history and find user's top terms.
+  /**
+   * Use browsing history and find user's top terms.
+   *
+   * return {object}
+   *   List of vocabs with top taxonomy term and count.
+   */
   Drupal.SemiAnon.getFavoriteTerms = function () {
     var results = Drupal.SemiAnon.getActivities('browsing'),
         pages = [], // De-dupe.
@@ -92,7 +97,7 @@
    * @param {string} group
    *   Name of the tracking group to return values for.
    *
-   * return {array}
+   * return {object}
    *   Key/value list of tracking localStorage entries.
    */
   Drupal.SemiAnon.getActivities = function (group) {
