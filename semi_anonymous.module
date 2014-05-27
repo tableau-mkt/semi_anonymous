@@ -135,7 +135,7 @@ function semi_anonymous_preprocess_html(&$variables) {
 
   // Add user origin asset.
   if (variable_get($m . 'store_user_origins', TRUE)) {
-    drupal_add_js(array('semi_anonymous' => array('user_deferred' => false)), 'setting');
+    drupal_add_js(array('semi_anonymous' => array('userDeferred' => false)), 'setting');
     drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.users.js');
   }
 }

@@ -15,36 +15,36 @@
       if (context === document) {
 
         // Log browsing.
-        if (settings.semi_anonymous.track_browsing || settings.semi_anonymous.track_term_hits) {
-          var returnVal = {};
+        if (settings.semi_anonymous.track_browsing) {
+          var trackVal = {};
 
           // Log page view.
           if (settings.semi_anonymous.track_browsing) {
-            returnVal.url = window.location.href;
+            trackVal.url = window.location.href;
             // Log configured items.
             if (settings.semi_anonymous_tracking) {
               $.each(settings.semi_anonymous_tracking, function (i, val) {
                 // Add each item.
                 if (typeof settings.semi_anonymous_meta[val] !== undefined) {
-                  returnVal[val] = settings.semi_anonymous_meta[val];
+                  trackVal[val] = settings.semi_anonymous_meta[val];
                 }
               });
             }
             else {
               // Log all meta data.
               $.each(settings.semi_anonymous_meta, function (i, val) {
-                returnVal[i] = val;
+                trackVal[i] = val;
               });
             }
           }
 
           // Log term hits.
           if (settings.semi_anonymous.track_term_hits) {
-            returnVal.taxonomy = settings.semi_anonymous_meta.taxonomy;
+            trackVal.taxonomy = settings.semi_anonymous_meta.taxonomy;
           }
 
           // Stash it.
-          Drupal.SemiAnon.createActivity('browsing', JSON.stringify(returnVal));
+          Drupal.SemiAnon.createActivity('browsing', JSON.stringify(trackVal));
         }
 
       }
@@ -91,8 +91,9 @@
    * 
    * @param {string} group
    *   Name of the tracking group to return values for.
+   *
    * return {array}
-   *   List of tracking localStorage entries.
+   *   Key/value list of tracking localStorage entries.
    */
   Drupal.SemiAnon.getActivities = function (group) {
     var results = $.jStorage.index(),

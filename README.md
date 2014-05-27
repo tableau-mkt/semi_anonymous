@@ -41,7 +41,7 @@ order irrelevant which is good for robustness.
   $(document).ready(function() {
     // Ensure data availability.
     Drupal.settings.semi_anonymous.userDeferred = Drupal.settings.semi_anonymous.userDeferred || $.Deferred();
-    Drupal.settings.semi_anonymous.user_deferred.done(function () {
+    Drupal.settings.semi_anonymous.userDeferred.done(function () {
 
       // Grab the user property.
       var origin = JSON.parse($.jStorage.get('user.origin'));
@@ -136,14 +136,13 @@ if (typeof favTerms.my_category != 'undefined') {
 You can register our own tracking activities like this...
 ```javascript
 // Track your own activities.
-$( ".my-special-links" ).bind("click", function (e) {
-  e.preventDefault();
+$('.my-special-links').bind('click', function (e) {
   myObj.linkText = $(this).text()
   myObj.myProperty = $(this).attr('data-property');
-  Drupal.SemiAnon.createActivity = function ('my_activity', myObj);
+  Drupal.SemiAnon.createActivity('my_activity', myObj);
 });
 
-// Retrieve them.
+// Retrieve them later.
 var myActivities = Drupal.SemiAnon.getActivities('my_activity');
 ```
 
