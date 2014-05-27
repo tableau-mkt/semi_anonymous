@@ -144,8 +144,7 @@ $( ".my-special-links" ).bind("click", function (e) {
 });
 
 // Retrieve them.
-Drupal.SemiAnon.getActivities('my_activity');
-});
+var myActivities = Drupal.SemiAnon.getActivities('my_activity');
 ```
 
 They will be stored and come back like this; filtered down to the group specified.
