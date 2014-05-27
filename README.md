@@ -144,7 +144,6 @@ $( ".my-special-links" ).bind("click", function (e) {
 });
 
 // Retrieve them.
-```javascript
 Drupal.SemiAnon.getActivities('my_activity');
 });
 ```
