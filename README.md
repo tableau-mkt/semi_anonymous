@@ -117,15 +117,14 @@ A user's browsing history is stored per page view. This is an example record whi
 
 Grab a hold of browsing history and work with it like this...
 ```javascript
-$.each(Drupal.SemiAnon.getActivities('browsing'), function (i, val) {
-  var item = JSON.parse($.jStorage.get(val));
-  someComparison(item.url);
+$.each(Drupal.SemiAnon.getActivities('browsing'), function (key, record) {
+  someComparison(record.url);
 });
 ```
 
 ###Favorite Terms
-Because we know how many times a person has seem specific tags, we can infer a person's favorite
-terms from their browing history. NOTE: Your tracking history storage settings.
+Because we know how many times a person has seen specific tags, we can infer a person's favorite
+terms from their browing history.
 ```javascript
 var favTerms = Drupal.SemiAnon.getFavoriteTerms();
 if (typeof favTerms.my_category != 'undefined') {
@@ -145,9 +144,8 @@ $( ".my-special-links" ).bind("click", function (e) {
 });
 
 // Retrieve them.
-$.each(Drupal.SemiAnon.getActivities('my_activity'), function (i, val) {
-  var item = JSON.parse($.jStorage.get(val));
-  someComparison(item.url);
+```javascript
+Drupal.SemiAnon.getActivities('my_activity');
 });
 ```
 

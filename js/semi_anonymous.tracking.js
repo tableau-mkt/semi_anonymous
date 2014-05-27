@@ -58,8 +58,7 @@
         terms = {}; // Return.
 
     // Walk through tracking records.
-    $.each(results, function(i, key) {
-      var record = JSON.parse($.jStorage.get(key));
+    $.each(results, function(key, record) {
       // Only count once.
       if (typeof pages[record.url] === 'undefined') {
         pages[record.url] = true;
@@ -96,21 +95,22 @@
    *   List of tracking localStorage entries.
    */
   Drupal.SemiAnon.getActivities = function (group) {
-    var results = $.jStorage.index();
+    var results = $.jStorage.index(),
+        returnVals = {};
 
-    if (group) {
-      // Remove unwanted types (string beginning assumed).
-      for(var i = 0; i < results.length; i++) {
-        if (results[i].indexOf('track.' + group) !== 0) {
-          results.splice(i, 1);
-          i--;
+    $.each(results, function (i, val) {
+      if (group) {
+        // Remove unwanted types (string beginning assumed).
+        if (i.indexOf('track.' + group) === 0) {
+          returnVals[val] = JSON.parse($.jStorage.get(val));
         }
       }
-      return results;
-    }
-    else {
-      return results;
-    }
+      else {
+        returnVals[val] = JSON.parse($.jStorage.get(val));
+      }
+    });
+
+    return returnVals;
   };
 
   /** Put a tracking record into storage.
