@@ -29,7 +29,7 @@ alert(myVal.thing + ' = ' + (myObj.cost * myObj.percent * .01));
 // Output 'something = 0.81'
 ```
 
-##User Info
+##Module Provided User Space
 To stash a single user property it's recommended to use a `user.property` key format. One of the most basic features is just knowing
 where a user came from. Find that info organized like this...
 ```json
@@ -52,7 +52,7 @@ order irrelevant which is good for robustness.
 ```javascript
 (function ($) {
   $(document).ready(function() {
-    // Ensure data availability.
+    // Ensure data availability. Rebuild/reuse/
     Drupal.settings.semi_anonymous.userDeferred = Drupal.settings.semi_anonymous.userDeferred || $.Deferred();
     Drupal.settings.semi_anonymous.userDeferred.done(function () {
 
@@ -74,9 +74,10 @@ order irrelevant which is good for robustness.
 
 ##Meta Data Output
 In order to do fun and fancy things on the client-side it's nice to have easy access to the meta data
-about the pages of our site. Yes, you might be able to get this from the DOM, but it's good to be sure.
+about the pages of our site. This module helps with that. Yes, you could get at this from the DOM, but it's good to be sure.
 You can pipe out whatever data you want in a custom module by implementing the
-`hook_semi_anonymous_output_properties()` function. Here's _some_ of what's available by default.
+`hook_semi_anonymous_output_properties()` or `hook_semi_anonymous_meta_alter()` functions.
+Here's _some_ of what's available by default.
 ```json
 {
   "nid" : "123",
