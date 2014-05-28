@@ -6,18 +6,31 @@ outputs meta data, stores user origins, and handles stashing of client-side acti
 
 ##Local Storage
 This module sets up the key/value jStorage localStorage abstraction library, which is super easy to use.
-See the jStorage site for more info: http://www.jstorage.info.
+See the jStorage site for more info: [jstorage.info](http://www.jstorage.info).
 ```javascript
 // Set a value on one page.
-$.jStorage.set('mySpecialValue', 'neato');
+$.jStorage.set('myThing', 'neato');
 
 // Get it on some later page.
-var myVal = $.jStorage.get('mySpecialValue');
+var myVal = $.jStorage.get('myThing');
+```
+
+For ease of use you should stash data in JSON format, duh.
+```javascript
+var myObj = {},
+    myObj.thing = 'something',
+    myObj.cost = 3;
+    myObj.percent = 27;
+$.jStorage.set('mySave', JSON.stringify(myObj));
+
+// Later access and use.
+var myVal = JSON.parse($.jStorage.get('mySave'));
+alert(myVal.thing + ' = ' + (myObj.cost * myObj.percent * .01));
+// Output 'something = 0.81'
 ```
 
 ##User Info
-To stash a single user property it's recommended to use a `user.property` key format. For ease of
-interaction, data is stashed in JSON format, duh. One of the most basic features is just knowing
+To stash a single user property it's recommended to use a `user.property` key format. One of the most basic features is just knowing
 where a user came from. Find that info organized like this...
 ```json
 {
@@ -128,7 +141,8 @@ terms from their browing history.
 ```javascript
 var favTerms = Drupal.SemiAnon.getFavoriteTerms();
 if (typeof favTerms.my_category != 'undefined') {
-  doSomeCoolAjaxThing(favTerms.my_category);
+  var countIsHere = favTerms.my_category.count;
+  doSomeCoolAjaxThing(favTerms.my_category.tid);
 }
 ```
 

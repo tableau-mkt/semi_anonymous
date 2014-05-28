@@ -3,7 +3,7 @@
  * Track browsing history or other logging stats.
  */
 
-// Those functions in need of a little jQuery.
+// Functions in need of a little jQuery.
 (function ($) {
 
   // Namespace for functions.
@@ -82,7 +82,6 @@
             });
           });
         }
-
       }
     });
 
@@ -93,7 +92,7 @@
 
   /**
    * Access records of a specific tracking group.
-   * 
+   *
    * @param {string} group
    *   Name of the tracking group to return values for.
    *
@@ -119,14 +118,15 @@
     return returnVals;
   };
 
-  /** Put a tracking record into storage.
-   * 
+  /**
+   * Put a tracking record into storage.
+   * @todo Could allow TTL as an optional parameter.
+   *
    * @param {string} group
    *   Name of the tracking group to store the data as.
    * @param {string} data
    *   Blob of data to store. Recommended as JSON.stringify(myDataObject).
    */
-  // @todo Could allow TTL as an optional parameter.
   Drupal.SemiAnon.createActivity = function (group, data) {
     // Place in storage.
     var n = new Date().getTime();

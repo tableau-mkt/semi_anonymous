@@ -166,17 +166,6 @@ function semi_anonymous_settings_form($form_state) {
     '#options' => $v_options,
     '#description' => t('The vocabularies which should be output as meta data and tracked when recording "hits" to terms on content.'),
   );
-  $form['content']['semi_anonymous_generate_favorites'] = array(
-    '#type' => 'checkbox',
-    '#states' => array(
-      'enabled' => array(
-        ':input[name="semi_anonymous_track_term_hits"]' => array('checked' => TRUE),
-      ),
-    ),
-    '#title' => t('Generate favorite term per vocab'),
-    '#default_value' => variable_get('semi_anonymous_generate_favorites', FALSE),
-    '#description' => t('Calculates a favorite term per vocab and place it on the user object. Requires tracking term hits.'),
-  );
 
   return system_settings_form($form);
 }
