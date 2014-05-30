@@ -14,14 +14,14 @@
     attach: function (context, settings) {
       if (context === document) {
 
+        // Init.
+        var trackVal = {};
+
         // Log browsing.
         if (settings.semi_anonymous.track_browsing) {
-          var trackVal = {};
-
           // Log page view.
           if (settings.semi_anonymous.track_browsing) {
-            trackVal.url = window.location.href;
-            // Log configured items.
+            // Log only configured items.
             if (settings.semi_anonymous_tracking) {
               $.each(settings.semi_anonymous_tracking, function (i, val) {
                 // Add each item.
@@ -32,10 +32,10 @@
             }
             else {
               // Log all meta data.
-              $.each(settings.semi_anonymous_meta, function (i, val) {
-                trackVal[i] = val;
-              });
+              trackVal = settings.semi_anonymous_meta;
             }
+            // Add the URL.
+            trackVal.url = window.location.href;
           }
 
           // Log term hits.
@@ -60,45 +60,43 @@
    */
   Drupal.SemiAnon.getFavoriteTerms = function (returnAll) {
     var returnAll = (typeof returnAll === 'undefined') ? false : returnAll,
-        results = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities('browsing')),
+        results = Drupal.SemiAnon.getActivities('browsing'), // Collection not needed.
         pages = [], // In order to de-dupe.
-        returnTerms = {}; // Return.
+        returnTerms = {}, // Return.
+        topTerms = {}; // Top only return.
 
     // Walk through tracking records.
-    $.each(results.get(), function (key, record) {
+    for (key in results) {
       // Only count once.
-      if (typeof pages[record.url] === 'undefined') {
+      if (typeof pages[results[key].url] === 'undefined' && results[key].hasOwnProperty('taxonomy')) {
         // For de-duping URL hits.
-        pages[record.url] = true;
+        pages[results[key].url] = true;
 
-        if (record.hasOwnProperty('taxonomy')) {
-          // Walk through vocabs.
-          for (vocName in record.taxonomy) {
-            // Walk through terms.
-            for (tid in record.taxonomy[vocName]) {
-              // Non-existant vocab.
-              if (!returnTerms.hasOwnProperty(vocName)) {
-                returnTerms[vocName] = {};
-              }
+        // Walk through vocabs.
+        for (vocName in results[key].taxonomy) {
+          // Walk through terms.
+          for (tid in results[key].taxonomy[vocName]) {
+            // Non-existant vocab.
+            if (!returnTerms.hasOwnProperty(vocName)) {
+              returnTerms[vocName] = {};
+            }
 
-              // Existing term, add to count.
-              if (returnTerms[vocName].hasOwnProperty(tid)) {
-                returnTerms[vocName][tid].count++;
-              }
-              else {
-                // New, add it on and create count.
-                returnTerms[vocName][tid] = { name: record.taxonomy[vocName][tid], count: 1 };
-              }
+            // Existing term, add to count.
+            if (returnTerms[vocName].hasOwnProperty(tid)) {
+              returnTerms[vocName][tid].count++;
+            }
+            else {
+              // New, add it on and create count.
+              returnTerms[vocName][tid] = { name: results[key].taxonomy[vocName][tid], count: 1 };
             }
           }
-
         }
+
       }
-    });
+    }
 
     // Reduce to just top terms per vocab. #3737
     if (!returnAll) {
-      var topTerms = {};
       // Walk through vocabs.
       for (vocName in returnTerms) {
         var topCount = 0;
@@ -144,18 +142,16 @@
         returnVals = {};
 
     if (group) {
-     // Remove unwanted types and return records.
-      $.each(results, function (i, val) {
-        if (val.indexOf('track.' + group) === 0) {
-          returnVals[val] = JSON.parse($.jStorage.get(val));
+      // Remove unwanted types and return records.
+      for (i in results) {
+        if (results[i].indexOf('track.' + group) === 0) {
+          returnVals[results[i]] = JSON.parse($.jStorage.get(results[i]));
         }
-      });
+      }
     }
     else {
       // Collect and return all.
-      $.each(results, function (i, val) {
-        returnVals[val] = JSON.parse($.jStorage.get(val));
-      });
+      for (i in results) returnVals[results[i]] = JSON.parse($.jStorage.get(results[i]));
     }
 
     return returnVals;
@@ -173,20 +169,19 @@
    */
   Drupal.SemiAnon.createActivity = function (group, data) {
     var results = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities(group)),
-        n = new Date().getTime();
+        keys = results.keys(),
+        n = new Date().getTime(),
+        diff = 0;
 
     // Log event, first.
     $.jStorage.set('track.' + group + '.' + n, data);
 
     // Ensure space limit is maintained.
     if (results.size() > Drupal.settings.semi_anonymous.track_browsing_extent) {
-      var diff = results.size() - Drupal.settings.semi_anonymous.track_browsing_extent,
-          keys = results.keys();
+      diff = results.size() - Drupal.settings.semi_anonymous.track_browsing_extent;
 
       // Kill off oldest extra tracking activities.
-      for (var i=0; i<=diff; i++) {
-        $.jStorage.deleteKey(keys[i]);
-      }
+      for (var i=0; i<=diff; i++) $.jStorage.deleteKey(keys[i]);
     }
   };
 
