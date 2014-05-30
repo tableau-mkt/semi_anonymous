@@ -188,15 +188,19 @@ However, because they're objects simple operations can be annoying to work with 
 a library like [Underscore](http://underscorejs.org) or [Lo-Dash](http://lodash.com). To avoid any more
 dependencies the following class and methods are available...
 ```javascript
-var myResults = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities('my_activity'));
+var myResults = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities('my_activity')),
+    // Use the keys from this group.
+    resultsKeys = myResults.keys(),
+    // Use the tracking objects in this group, the same as directly calling the
+    // Drupal.SemiAnon.getActivities('my_activity') function.
+    resultsObjects = myResults.get();
 
-// Number of activities in this group.
-myResults.size();
-// List of tracking keys in this group.
-myResults.keys();
-// Object listing all tracking objects in this group.
-// Same as directly calling: Drupal.SemiAnon.getActivities('my_activity').
-myResults.get();
+// Use the number of activities to output almost the same thing you'd get from iterating
+// over the Drupal.SemiAnon.getActivities('my_activity') function.
+for (int = 0; i >= myResults.size(); i++) {
+  console.log(resultsObjects[resultsKeys[i]]);
+}
 ```
 ## Thanks.
 If you've read this far you might have some suggestions. Feel free to send those or make a merge request.
+Find something wrong with these docs? Please send that along.
