@@ -1,18 +1,21 @@
 Semi Anonymous
 ==============
+Track in order to react to anonymous user behavior.
 
-Track in order to react to anonymous user behavior. This Drupal module provides localStorage space,
-outputs meta data, stores user origins, and handles stashing of client-side activity data.
-
-* __[LocalStorage](#local-storage)__ - get started
+* __[Getting started](#getting-started)__
+ * [Local storage](#local-storage) - how the data storage works
  * [User data space](#module-provided-user-space) - standardized and guaranteed
  * [Page meta data](#meta-data-output) - available properties
-* __[Pageview tracking](#activity-tracking)__ - browsing history storage
+* __[Pageview tracking](#activity-tracking)__
  * [Favorite terms](#favorite-terms) - accessing aggregated profiling
-* __[Custom tracking!](#custom-tracking)__ - stash your own activities
-* __[Advanced Use](#advanced-use)__ - advanced activity access
+* __[Custom tracking](#custom-tracking)__
+ * Stash and retrieve your own activities with ease!
+* __[Advanced use](#advanced-use)__
 
-##Local Storage
+##Getting started
+This Drupal module does several things, which may independently solve your need. It provides in-browser localStorage space, outputs Drupal page meta data, stores a user "origins," and handles stashing of client-side activity data.
+
+###Local Storage
 This module sets up the key/value jStorage localStorage abstraction library, which is super easy to use.
 See the jStorage site for more info: [jstorage.info](http://www.jstorage.info).
 ```javascript
@@ -22,7 +25,6 @@ $.jStorage.set('myThing', 'neato');
 // Get it on some later page.
 var myVal = $.jStorage.get('myThing');
 ```
-
 For ease of use you should stash data in JSON format, duh.
 ```javascript
 var myObj = {},
@@ -53,7 +55,6 @@ where a user came from. Find that info organized like this...
   }
 }
 ```
-
 To access user storage, it's recommended that you wait until the object is available. There can be a
 very small amount of time associated with jQuery + jStorage setup, additionally this keeps JS include
 order irrelevant which is good for robustness.
@@ -82,10 +83,11 @@ order irrelevant which is good for robustness.
 
 ###Meta Data Output
 In order to do fun and fancy things on the client-side it's nice to have easy access to the meta data
-about the pages of our site. This module helps with that. Yes, you could get at this from the DOM, but it's good to be sure.
-You can pipe out whatever data you want in a custom module by implementing the
-`hook_semi_anonymous_output_properties()` or `hook_semi_anonymous_meta_alter()` functions.
-Here's _some_ of what's available by default.
+about the pages of your site. This modules helps output that info. You could get some of this from the
+DOM, but it's good to be sure. _You could use this feature and skip all other localStorage features._
+You can configure what gets pushed out as well as add and alter what's available via a custom module
+by implementing the `hook_semi_anonymous_output_properties()` and/or `hook_semi_anonymous_meta_alter()` functions.
+Here's _some_ of what's available by default...
 ```json
 {
   "nid" : "123",
@@ -106,8 +108,7 @@ Here's _some_ of what's available by default.
   }
 }
 ```
-
-Grab a hold of these available goodies.
+Grab a hold of those available goodies.
 ```javascript
 var pageAuthorUID = Drupal.settings.semi_anonymous_meta.uid,
     pageTitle = Drupal.settings.semi_anonymous_meta.title,
@@ -119,7 +120,7 @@ if (typeof Drupal.settings.semi_anonymous_meta.taxonomy.my_category !== 'undefin
 ```
 
 ##Activity Tracking
-A user's browsing history is stored per page view. This is an example record which includes taxonomy term hit tracking enabled.
+A user's browsing history is stored per page view. This is an example record, which includes data from taxonomy term hit tracking being enabled...
 ```json
 {
   "track.browsing.398649600" : {
@@ -136,7 +137,6 @@ A user's browsing history is stored per page view. This is an example record whi
   }
 }
 ```
-
 Grab a hold of browsing history and work with it like this...
 ```javascript
 $.each(Drupal.SemiAnon.getActivities('browsing'), function (key, record) {
@@ -149,22 +149,7 @@ If you want to get fancier with your processing, read on to [Advanced Use](#adva
 There's no point in stashing user activity unless you use it. Because we know how many
 times a person has seen specific tags, we can infer a person's favorite terms from their
 rich browsing history records. _NOTE: A vocabulary can have more than one term returned
-if the hit count is the same._
-```javascript
-var favTerms = Drupal.SemiAnon.getFavoriteTerms(),
-    onlyOnce = false;
-
-// Ensure a favorite exists for desired vocab.
-if (typeof favTerms.my_category != 'undefined') {
-  for (tid in favTerms.my_category) {
-    if (!onlyOnce && favTerms.my_category.tid.count > myThreshold) {
-      // Use user profiling to react!
-      doSomeCoolAjaxThing(tid, termCount);
-    }
-  }
-}
-```
-You'll get a return like this...
+if the hit count is the same._ For clarity here's what you get...
 ```json
 {
   "my_category" : {
@@ -181,12 +166,26 @@ You'll get a return like this...
   },
 }
 ```
+You might use that data with some kind of on-page AJAX reaction...
+```javascript
+var favTerms = Drupal.SemiAnon.getFavoriteTerms(),
+    onlyOnce = false;
 
+// Ensure a favorite exists for desired vocab.
+if (typeof favTerms.my_category != 'undefined') {
+  for (tid in favTerms.my_category) {
+    if (!onlyOnce && favTerms.my_category.tid.count > myThreshold) {
+      // Use user profiling to react!
+      doSomeCoolAjaxThing(tid, termCount);
+    }
+  }
+}
+```
 If you want to see ALL terms from pages seen by the user, with a hit count, just pass `true` as a function arg.
 ```javascript
 var allSeenTerms = Drupal.SemiAnon.getFavoriteTerms(true);
 ```
-Reults will be extended compared to the above, like this...
+Results will be extended compared to the above, like this...
 ```json
 {
   "my_category" : {
@@ -213,7 +212,7 @@ Reults will be extended compared to the above, like this...
 ```
 
 ##Custom Tracking!
-You can register our own tracking activities like this...
+You can register your own tracking activities like this...
 ```javascript
 // Track your own activities.
 $('.my-special-links').bind('click', function (e) {
@@ -238,7 +237,7 @@ They will be stored and come back like this; filtered down to the group specifie
 ```
 
 ##Advanced Use
-Because records are returned as an object, you can directly access them once retrieved.
+Because records are returned as an object, you can directly access them once retrieved. Example...
 ```javascript
 var myActivities = Drupal.SemiAnon.getActivities('my_activity');
 
@@ -247,9 +246,9 @@ $.each(myActivities, function (key, record) {
   someComparison(record.bundle, record.taxonomy, record.language);
 });
 ```
-However, because they're objects simple operations can be annoying to work with if you don't use
+However, because they're objects simple operations can be annoying to work with, if you don't use
 a library like [Underscore](http://underscorejs.org) or [Lo-Dash](http://lodash.com). To avoid any more
-dependencies the following class and methods are available...
+dependencies the following class and methods were necessary and are available...
 ```javascript
 var myResults = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities('my_activity')),
     // Use the keys from this group.
@@ -264,6 +263,10 @@ for (int = 0; i >= myResults.size(); i++) {
   console.log(resultsObjects[resultsKeys[i]]);
 }
 ```
+* `keys()` Returns a list of object properties, in this case tracking keys.
+* `size()` Returns an int, just like `myArray.length`
+* `get()` Returns the object you passed in, incase via function.
+
 ## Thanks.
 If you've read this far you might have some suggestions. Feel free to send those or make a merge request.
-Find something wrong with these docs? Please send that along.
+Find something wrong with these docs? Please send that along as well.
