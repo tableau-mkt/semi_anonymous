@@ -58,37 +58,74 @@
    * return {object}
    *   List of vocabs with top taxonomy term and count.
    */
-  Drupal.SemiAnon.getFavoriteTerms = function () {
-    var results = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities('browsing')),
-        pages = [], // De-dupe.
-        terms = {}; // Return.
+  Drupal.SemiAnon.getFavoriteTerms = function (returnAll) {
+    var returnAll = (typeof returnAll === 'undefined') ? false : returnAll,
+        results = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities('browsing')),
+        pages = [], // In order to de-dupe.
+        returnTerms = {}; // Return.
 
     // Walk through tracking records.
-    $.each(results.get(), function(key, record) {
+    $.each(results.get(), function (key, record) {
       // Only count once.
       if (typeof pages[record.url] === 'undefined') {
+        // For de-duping URL hits.
         pages[record.url] = true;
         if (record.hasOwnProperty('taxonomy')) {
-          // Walk through vocabs and terms.
+          // Walk through vocabs.
           $.each(record.taxonomy, function (vocName, data) {
+            // Walk through terms.
             $.each(record.taxonomy[vocName], function (tid, val) {
-              // Existing, add to count.
-              if (terms.hasOwnProperty(tid)) {
-                terms[tid].count++;
+              // Non-existant vocab.
+              if (!returnTerms.hasOwnProperty(vocName)) {
+                returnTerms[vocName] = {};
+              }
+
+              // Existing term, add to count.
+              if (returnTerms[vocName].hasOwnProperty(tid)) {
+                returnTerms[vocName][tid].count++;
               }
               else {
                 // New, add it on and create count.
-                terms[tid] = {vocabulary: vocName, count: 1};
+                returnTerms[vocName][tid] = { name: record.taxonomy[vocName][tid], count: 1 };
               }
+
             });
           });
         }
       }
     });
 
-    // @todo Sort and reduce. #3737
+    // Reduce to just top terms per vocab. #3737
+    if (!returnAll) {
+      var topTerms = {};
+      // Walk through vocabs.
+      $.each(returnTerms, function (vocName, data) {
+        var topCount = 0;
 
-    return terms;
+        // Walk through terms, to find top count.
+        $.each(returnTerms[vocName], function (tid, val) {
+          // Find top term hit count.
+          if (returnTerms[vocName][tid].count > topCount) {
+            topCount = returnTerms[vocName][tid].count;
+          }
+        });
+        // Walk through terms, again, to collect top terms.
+        $.each(returnTerms[vocName], function (tid, val) {
+          // Find top term hit count.
+          if (returnTerms[vocName][tid].count == topCount) {
+            if (!topTerms.hasOwnProperty(vocName)) {
+              topTerms[vocName] = {};
+            }
+            topTerms[vocName][tid] = returnTerms[vocName][tid];
+          }
+        });
+      });
+
+      return topTerms;
+    }
+    else {
+      return returnTerms;
+    }
   };
 
 
@@ -143,7 +180,7 @@
     // Ensure space limit is maintained.
     if (results.size() > Drupal.settings.semi_anonymous.track_browsing_extent) {
       var diff = results.size() - Drupal.settings.semi_anonymous.track_browsing_extent,
-          keys = results.keys().sort();
+          keys = results.keys();
 
       // Kill off oldest extra tracking activities.
       for (var i=0; i<=diff; i++) {
@@ -159,7 +196,7 @@
    */
 
   /**
-   * Handy object type for record retrieval.
+   * Handy object type for record retrieval and use.
    * Namespaced for easy use to extend the module.
    *
    * param {object}
@@ -202,7 +239,7 @@
           keys = [];
           for (var key in obj) keys.push(key);
         }
-        return keys;
+        return keys.sort();
       },
 
       /**
