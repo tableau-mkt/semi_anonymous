@@ -135,6 +135,7 @@ $.each(Drupal.SemiAnon.getActivities('browsing'), function (key, record) {
   someComparison(record.url);
 });
 ```
+If you want to get fancier with your processing, read on to "[Working with records](#working-with-records)."
 
 ###Favorite Terms
 Because we know how many times a person has seen specific tags, we can infer a person's favorite
@@ -187,15 +188,15 @@ However, because they're objects simple operations can be annoying to work with 
 a library like [Underscore](http://underscorejs.org) or [Lo-Dash](http://lodash.com). To avoid any more
 dependencies the following class and methods are available...
 ```javascript
-var my_results = new Drupal.SemiAnon.Activities(Drupal.SemiAnon.getActivities('my_activity'));
+var myResults = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities('my_activity'));
 
 // Number of activities in this group.
-my_results.size();
+myResults.size();
 // List of tracking keys in this group.
-my_results.keys();
+myResults.keys();
 // Object listing all tracking objects in this group.
 // Same as directly calling: Drupal.SemiAnon.getActivities('my_activity').
-my_results.get();
+myResults.get();
 ```
 ## Thanks.
 If you've read this far you might have some suggestions. Feel free to send those or make a merge request.

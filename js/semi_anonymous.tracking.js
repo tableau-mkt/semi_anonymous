@@ -59,12 +59,12 @@
    *   List of vocabs with top taxonomy term and count.
    */
   Drupal.SemiAnon.getFavoriteTerms = function () {
-    var results = Drupal.SemiAnon.getActivities('browsing'),
+    var results = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities('browsing')),
         pages = [], // De-dupe.
         terms = {}; // Return.
 
     // Walk through tracking records.
-    $.each(results, function(key, record) {
+    $.each(results.get(), function(key, record) {
       // Only count once.
       if (typeof pages[record.url] === 'undefined') {
         pages[record.url] = true;
@@ -134,7 +134,7 @@
    *   Blob of data to store. Recommended as JSON.stringify(myDataObject).
    */
   Drupal.SemiAnon.createActivity = function (group, data) {
-    var results = new Drupal.SemiAnon.Activities(Drupal.SemiAnon.getActivities(group)),
+    var results = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities(group)),
         n = new Date().getTime();
 
     // Log event, first.
@@ -165,7 +165,7 @@
    * param {object}
    *   Set of records to gain methods on.
    */
-  Drupal.SemiAnon.Activities = function (obj) {
+  Drupal.SemiAnon.Collection = function (obj) {
     // Private vars.
     var keys = null,
         length = null;
