@@ -70,11 +70,12 @@
       if (typeof pages[record.url] === 'undefined') {
         // For de-duping URL hits.
         pages[record.url] = true;
+
         if (record.hasOwnProperty('taxonomy')) {
           // Walk through vocabs.
-          $.each(record.taxonomy, function (vocName, data) {
+          for (vocName in record.taxonomy) {
             // Walk through terms.
-            $.each(record.taxonomy[vocName], function (tid, val) {
+            for (tid in record.taxonomy[vocName]) {
               // Non-existant vocab.
               if (!returnTerms.hasOwnProperty(vocName)) {
                 returnTerms[vocName] = {};
@@ -88,9 +89,9 @@
                 // New, add it on and create count.
                 returnTerms[vocName][tid] = { name: record.taxonomy[vocName][tid], count: 1 };
               }
+            }
+          }
 
-            });
-          });
         }
       }
     });
@@ -99,18 +100,18 @@
     if (!returnAll) {
       var topTerms = {};
       // Walk through vocabs.
-      $.each(returnTerms, function (vocName, data) {
+      for (vocName in returnTerms) {
         var topCount = 0;
 
         // Walk through terms, to find top count.
-        $.each(returnTerms[vocName], function (tid, val) {
+        for (tid in returnTerms[vocName]) {
           // Find top term hit count.
           if (returnTerms[vocName][tid].count > topCount) {
             topCount = returnTerms[vocName][tid].count;
           }
-        });
+        }
         // Walk through terms, again, to collect top terms.
-        $.each(returnTerms[vocName], function (tid, val) {
+        for (tid in returnTerms[vocName]) {
           // Find top term hit count.
           if (returnTerms[vocName][tid].count == topCount) {
             if (!topTerms.hasOwnProperty(vocName)) {
@@ -118,8 +119,8 @@
             }
             topTerms[vocName][tid] = returnTerms[vocName][tid];
           }
-        });
-      });
+        }
+      }
 
       return topTerms;
     }
