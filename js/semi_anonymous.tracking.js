@@ -134,7 +134,7 @@
    *   Blob of data to store. Recommended as JSON.stringify(myDataObject).
    */
   Drupal.SemiAnon.createActivity = function (group, data) {
-    var results = new Drupal.SemiAnon.Records(Drupal.SemiAnon.getActivities(group)),
+    var results = new Drupal.SemiAnon.Activities(Drupal.SemiAnon.getActivities(group)),
         n = new Date().getTime();
 
     // Log event, first.
@@ -165,7 +165,7 @@
    * param {object}
    *   Set of records to gain methods on.
    */
-  Drupal.SemiAnon.Records = function (obj) {
+  Drupal.SemiAnon.Activities = function (obj) {
     // Private vars.
     var keys = null,
         length = null;

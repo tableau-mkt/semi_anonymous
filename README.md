@@ -187,7 +187,7 @@ However, because they're objects simple operations can be annoying to work with 
 a library like [Underscore](http://underscorejs.org) or [Lo-Dash](http://lodash.com). To avoid any more
 dependencies the following class and methods are available...
 ```javascript
-var my_results = new Records(Drupal.SemiAnon.getActivities('my_activity'));
+var my_results = new Drupal.SemiAnon.Activities(Drupal.SemiAnon.getActivities('my_activity'));
 
 // Number of activities in this group.
 my_results.size();
