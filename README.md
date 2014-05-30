@@ -4,6 +4,14 @@ Semi Anonymous
 Track in order to react to anonymous user behavior. This Drupal module provides localStorage space,
 outputs meta data, stores user origins, and handles stashing of client-side activity data.
 
+* __[LocalStorage](#local-storage)__ - get started
+ * [User data space](#module-provided-user-space) - standardized and guaranteed
+ * [Page meta data](#meta-data-output) - available properties
+* __[Pageview tracking](#activity-tracking)__ - browsing history storage
+ * [Favorite terms](#favorite-terms) - accessing aggregated profiling
+* __[Custom tracking!](#custom-tracking)__ - stash your own activities
+* __[Advanced Use](#advanced-use)__ - advanced activity access
+
 ##Local Storage
 This module sets up the key/value jStorage localStorage abstraction library, which is super easy to use.
 See the jStorage site for more info: [jstorage.info](http://www.jstorage.info).
@@ -29,7 +37,7 @@ alert(myVal.thing + ' = ' + (myObj.cost * myObj.percent * .01));
 // Output 'something = 0.81'
 ```
 
-##Module Provided User Space
+###Module Provided User Space
 To stash a single user property it's recommended to use a `user.property` key format. One of the most basic features is just knowing
 where a user came from. Find that info organized like this...
 ```json
@@ -72,7 +80,7 @@ order irrelevant which is good for robustness.
 })(jQuery);
 ```
 
-##Meta Data Output
+###Meta Data Output
 In order to do fun and fancy things on the client-side it's nice to have easy access to the meta data
 about the pages of our site. This module helps with that. Yes, you could get at this from the DOM, but it's good to be sure.
 You can pipe out whatever data you want in a custom module by implementing the
@@ -135,17 +143,25 @@ $.each(Drupal.SemiAnon.getActivities('browsing'), function (key, record) {
   someComparison(record.url);
 });
 ```
-If you want to get fancier with your processing, read on to "[Working with records](#working-with-records)."
+If you want to get fancier with your processing, read on to [Advanced Use](#advanced-use).
 
 ###Favorite Terms
-Because we know how many times a person has seen specific tags, we can infer a person's favorite
-terms from their browing history.
+There's no point in stashing user activity unless you use it. Because we know how many
+times a person has seen specific tags, we can infer a person's favorite terms from their
+rich browsing history records. _NOTE: A vocabulary can have more than one term returned
+if the hit count is the same._
 ```javascript
-var favTerms = Drupal.SemiAnon.getFavoriteTerms();
+var favTerms = Drupal.SemiAnon.getFavoriteTerms(),
+    onlyOnce = false;
 
+// Ensure a favorite exists for desired vocab.
 if (typeof favTerms.my_category != 'undefined') {
-  var countIsHere = favTerms.my_category.count;
-  doSomeCoolAjaxThing(favTerms.my_category.tid);
+  for (tid in favTerms.my_category) {
+    if (!onlyOnce && favTerms.my_category.tid.count > myThreshold) {
+      // Use user profiling to react!
+      doSomeCoolAjaxThing(tid, termCount);
+    }
+  }
 }
 ```
 You'll get a return like this...
@@ -221,7 +237,7 @@ They will be stored and come back like this; filtered down to the group specifie
 }
 ```
 
-###Working with records
+##Advanced Use
 Because records are returned as an object, you can directly access them once retrieved.
 ```javascript
 var myActivities = Drupal.SemiAnon.getActivities('my_activity');
