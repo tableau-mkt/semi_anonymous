@@ -169,13 +169,13 @@ You'll get a return like this...
 {
   "my_category" : {
     "123" : {
-      "count" : 5
+      "count" : 5,
       "name" : "My Term"
     },
   },
   "my_types" : {
     "555" : {
-      "count" : 7
+      "count" : 7,
       "name" : "My Type"
     },
   },
@@ -191,21 +191,21 @@ Reults will be extended compared to the above, like this...
 {
   "my_category" : {
     "123" : {
-      "count" : 5
+      "count" : 5,
       "name" : "My Term"
     },
     "456" : {
-      "count" : 2
+      "count" : 2,
       "name" : "My Other Term"
     },
   },
   "my_types" : {
     "555" : {
-      "count" : 7
+      "count" : 7,
       "name" : "My Type"
     },
     "999" : {
-      "count" : 1
+      "count" : 1,
       "name" : "Another Type"
     },
   },
