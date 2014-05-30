@@ -141,13 +141,14 @@ Because we know how many times a person has seen specific tags, we can infer a p
 terms from their browing history.
 ```javascript
 var favTerms = Drupal.SemiAnon.getFavoriteTerms();
+
 if (typeof favTerms.my_category != 'undefined') {
   var countIsHere = favTerms.my_category.count;
   doSomeCoolAjaxThing(favTerms.my_category.tid);
 }
 ```
 
-##Custom Tracking
+##Custom Tracking!
 You can register our own tracking activities like this...
 ```javascript
 // Track your own activities.
@@ -156,9 +157,6 @@ $('.my-special-links').bind('click', function (e) {
   myObj.myProperty = $(this).attr('data-property');
   Drupal.SemiAnon.createActivity('my_activity', myObj);
 });
-
-// Retrieve them later.
-var myActivities = Drupal.SemiAnon.getActivities('my_activity');
 ```
 
 They will be stored and come back like this; filtered down to the group specified.
@@ -174,3 +172,30 @@ They will be stored and come back like this; filtered down to the group specifie
   }
 }
 ```
+
+###Working with records
+Because records are returned as an object, you can directly access them once retrieved.
+```javascript
+var myActivities = Drupal.SemiAnon.getActivities('my_activity');
+
+// Iterate and do something neat.
+$.each(myActivities, function (key, record) {
+  someComparison(record.bundle, record.taxonomy, record.language);
+});
+```
+However, because they're objects simple operations can be annoying to work with if you don't use
+a library like [Underscore](http://underscorejs.org) or [Lo-Dash](http://lodash.com). To avoid any more
+dependencies the following class and methods are available...
+```javascript
+var my_results = new Records(Drupal.SemiAnon.getActivities('my_activity'));
+
+// Number of activities in this group.
+my_results.size();
+// List of tracking keys in this group.
+my_results.keys();
+// Object listing all tracking objects in this group.
+// Same as directly calling: Drupal.SemiAnon.getActivities('my_activity').
+my_results.get();
+```
+## Thanks.
+If you've read this far you might have some suggestions. Feel free to send those or make a merge request.

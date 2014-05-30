@@ -51,6 +51,7 @@
     }
   };
 
+
   /**
    * Use browsing history and find user's top terms.
    *
@@ -90,6 +91,7 @@
     return terms;
   };
 
+
   /**
    * Access records of a specific tracking group.
    *
@@ -103,20 +105,24 @@
     var results = $.jStorage.index(),
         returnVals = {};
 
-    $.each(results, function (i, val) {
-      if (group) {
-        // Remove unwanted types (string beginning assumed).
-        if (i.indexOf('track.' + group) === 0) {
+    if (group) {
+     // Remove unwanted types and return records.
+      $.each(results, function (i, val) {
+        if (val.indexOf('track.' + group) === 0) {
           returnVals[val] = JSON.parse($.jStorage.get(val));
         }
-      }
-      else {
+      });
+    }
+    else {
+      // Collect and return all.
+      $.each(results, function (i, val) {
         returnVals[val] = JSON.parse($.jStorage.get(val));
-      }
-    });
+      });
+    }
 
     return returnVals;
   };
+
 
   /**
    * Put a tracking record into storage.
@@ -128,10 +134,87 @@
    *   Blob of data to store. Recommended as JSON.stringify(myDataObject).
    */
   Drupal.SemiAnon.createActivity = function (group, data) {
-    // Place in storage.
-    var n = new Date().getTime();
-    // Log event.
+    var results = new Drupal.SemiAnon.Records(Drupal.SemiAnon.getActivities(group)),
+        n = new Date().getTime();
+
+    // Log event, first.
     $.jStorage.set('track.' + group + '.' + n, data);
+
+    // Ensure space limit is maintained.
+    if (results.size() > Drupal.settings.semi_anonymous.track_browsing_extent) {
+      var diff = results.size() - Drupal.settings.semi_anonymous.track_browsing_extent,
+          keys = results.keys().sort();
+
+      // Kill off oldest extra tracking activities.
+      for (var i=0; i<=diff; i++) {
+        $.jStorage.deleteKey(keys[i]);
+      }
+    }
+  };
+
+
+  /**
+   * Utility...
+   * (Avoiding depdencies)
+   */
+
+  /**
+   * Handy object type for record retrieval.
+   * Namespaced for easy use to extend the module.
+   *
+   * param {object}
+   *   Set of records to gain methods on.
+   */
+  Drupal.SemiAnon.Records = function (obj) {
+    // Private vars.
+    var keys = null,
+        length = null;
+
+    // Public functions.
+    return {
+
+      /**
+       * Get the size of an object.
+       *
+       * param {object} obj
+       *   Oject to be inspected.
+       * return {number}
+       *   Size of the object.
+       */
+      size : function () {
+        if (length === null) {
+          length = 0;
+          for (var key in obj) length++;
+        }
+        return length;
+      },
+
+      /**
+       * Get the property keys of an object.
+       *
+       * param {object} obj
+       *   Oject to be inspected.
+       * return {array}
+       *   List of object properties.
+       */
+      keys : function () {
+        if (keys === null) {
+          keys = [];
+          for (var key in obj) keys.push(key);
+        }
+        return keys;
+      },
+
+      /**
+       * Access the object from this instance.
+       *
+       * return {object}
+       *   Use what you started with.
+       */
+      get : function () {
+        return obj;
+      }
+    }
   };
 
 })(jQuery);

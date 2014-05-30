@@ -18,7 +18,7 @@ function semi_anonymous_help($path, $arg) {
 /**
  * Implements hook_menu().
  */
-function semi_anonymous_menu() { 
+function semi_anonymous_menu() {
   $items['admin/config/system/semi-anonymous'] = array(
     'title' => 'Semi Anonymous',
     'description' => 'Provide standardized space and adds page meta data client-side use.',
@@ -127,9 +127,15 @@ function semi_anonymous_preprocess_html(&$variables) {
     }
   }
 
-  // Add tracking asset and setting.
+  // Add tracking setting(s) and asset.
   if (variable_get($m . 'track_browsing', FALSE)) {
-    drupal_add_js(array('semi_anonymous' => array('track_browsing' => true)), 'setting');
+    drupal_add_js(
+      array('semi_anonymous' => array(
+        'track_browsing' => true,
+        'track_browsing_extent' => variable_get('semi_anonymous_track_browsing_extent', 'false'),
+      )),
+      'setting'
+    );
     drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
   }
 
@@ -185,9 +191,9 @@ function semi_anonymous_semi_anonymous_meta() {
 /**
  * Utility function to agnosticly get the current menu object.
  * Structured like menu_get_object(), but the passed type will be set for you.
- * 
+ *
  * @param string (reference) $return_type
- * 
+ *
  * return object
  *   Entity object of current menu callback page.
  */
@@ -226,7 +232,7 @@ function _semi_anonymous_menu_get_any_object(&$return_type) {
 /**
  * Fetch all taxonomy terms from an entity.
  * All fields of field type "taxonomy_term_reference" will be included.
- * 
+ *
  * Idea found at https://api.drupal.org/comment/50393#comment-50393
  * Thanks to HydroZ.
  *
