@@ -148,6 +148,53 @@ if (typeof favTerms.my_category != 'undefined') {
   doSomeCoolAjaxThing(favTerms.my_category.tid);
 }
 ```
+You'll get a return like this...
+```json
+{
+  "my_category" : {
+    "123" : {
+      "count" : 5
+      "name" : "My Term"
+    },
+  },
+  "my_types" : {
+    "555" : {
+      "count" : 7
+      "name" : "My Type"
+    },
+  },
+}
+```
+
+If you want to see ALL terms from pages seen by the user, with a hit count, just pass `true` as a function arg.
+```javascript
+var allSeenTerms = Drupal.SemiAnon.getFavoriteTerms(true);
+```
+Reults will be extended compared to the above, like this...
+```json
+{
+  "my_category" : {
+    "123" : {
+      "count" : 5
+      "name" : "My Term"
+    },
+    "456" : {
+      "count" : 2
+      "name" : "My Other Term"
+    },
+  },
+  "my_types" : {
+    "555" : {
+      "count" : 7
+      "name" : "My Type"
+    },
+    "999" : {
+      "count" : 1
+      "name" : "Another Type"
+    },
+  },
+}
+```
 
 ##Custom Tracking!
 You can register our own tracking activities like this...
