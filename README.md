@@ -267,6 +267,11 @@ for (int = 0; i >= myResults.size(); i++) {
 * `size()` Returns an int, just like `myArray.length`
 * `get()` Returns the object you passed in, incase via function.
 
+##Tests?
+This module does not yet have client-side testing implemented. The plan is to use QUnit and Grunt
+to run unit testing of all JS functions. There is also some behavioral tests needed to confirm tracking
+and activities. This may need phantom. You are welcome to help with all of these efforts :)
+
 ## Thanks.
 If you've read this far you might have some suggestions. Feel free to send those or make a merge request.
 Find something wrong with these docs? Please send that along as well.
