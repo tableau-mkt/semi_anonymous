@@ -177,7 +177,9 @@ if (typeof favTerms.my_category != 'undefined') {
     if (!onlyOnce && favTerms.my_category.tid.count > myThreshold) {
       // Use user profiling to react!
       doSomeCoolAjaxThing(tid, termCount);
+      onlyOnce = true;
     }
+    else break;
   }
 }
 ```
