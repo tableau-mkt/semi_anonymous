@@ -17,7 +17,7 @@ function semi_anonymous_page_uninstall() {
     'semi_anonymous_track_browsing_extent',
     'semi_anonymous_add_page_meta',
     'semi_anonymous_output_terms',
-    ''semi_anonymous_track_meta',
+    'semi_anonymous_track_meta',
     'semi_anonymous_track_term_hits',
     'semi_anonymous_track_term_vocabs',
   );
