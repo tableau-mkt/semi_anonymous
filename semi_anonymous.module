@@ -106,8 +106,8 @@ function semi_anonymous_preprocess_html(&$variables) {
   // Add basic assets.
   if (variable_get($m . 'include', TRUE)) {
     // JSON2.
-    if (function_exists('libraries_load')) {
-      libraries_load('json2');
+    if (function_exists('libraries_load') && libraries_load('json2')) {
+      // You have Libraries 2.0 and some module registered this one.
     }
     else {
       $json_path = libraries_get_path('json2');
@@ -116,8 +116,8 @@ function semi_anonymous_preprocess_html(&$variables) {
       }
     }
     // jStorage.
-    if (function_exists('libraries_load')) {
-      libraries_load('json2');
+    if (function_exists('libraries_load') && libraries_load('jstorage')) {
+      // You have Libraries 2.0 and some module registered this one.
     }
     else {
       $json_path = libraries_get_path('jstorage');
