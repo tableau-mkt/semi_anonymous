@@ -17,35 +17,29 @@
         // Init.
         var trackVal = {};
 
-        // Log browsing.
-        if (settings.semi_anonymous.track_browsing) {
-          // Log page view.
-          if (settings.semi_anonymous.track_browsing) {
-            // Log only configured items.
-            if (settings.semi_anonymous_tracking) {
-              $.each(settings.semi_anonymous_tracking, function (i, val) {
-                // Add each item.
-                if (typeof settings.semi_anonymous_meta[val] !== undefined) {
-                  trackVal[val] = settings.semi_anonymous_meta[val];
-                }
-              });
+        // Log only configured items.
+        if (settings.semi_anonymous_tracking) {
+          $.each(settings.semi_anonymous_tracking, function (i, val) {
+            // Add each item.
+            if (typeof settings.semi_anonymous_meta[val] !== undefined) {
+              trackVal[val] = settings.semi_anonymous_meta[val];
             }
-            else {
-              // Log all meta data.
-              trackVal = settings.semi_anonymous_meta;
-            }
-            // Add the URL.
-            trackVal.url = window.location.href;
-          }
-
-          // Log term hits.
-          if (settings.semi_anonymous.track_term_hits) {
-            trackVal.taxonomy = settings.semi_anonymous_meta.taxonomy;
-          }
-
-          // Stash it.
-          Drupal.SemiAnon.createActivity('browsing', JSON.stringify(trackVal));
+          });
         }
+        else {
+          // Log all meta data.
+          trackVal = settings.semi_anonymous_meta;
+        }
+        // Add the URL.
+        trackVal.url = window.location.href;
+
+        // Log term hits.
+        if (settings.semi_anonymous.track_term_hits) {
+          trackVal.taxonomy = settings.semi_anonymous_meta.taxonomy;
+        }
+
+        // Stash it.
+        Drupal.SemiAnon.createActivity('browsing', JSON.stringify(trackVal));
 
       }
     }
