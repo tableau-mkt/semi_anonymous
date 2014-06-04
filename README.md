@@ -20,12 +20,10 @@ Both have a Drupal project if you prefer to register your libraries. Do one of t
 
 1. [jStorage](http://jstorage.info) localStorage abstraction library.
  * Place in `sites/all/libraries/jstorage/jstorage.min.js`
- * Or use the ([Drupal project](https://drupal.org/project/jstorage_lib).
+ * Or use the [Drupal project](https://drupal.org/project/jstorage_lib).
 2. [JSON2](https://github.com/douglascrockford/JSON-js) better JSON methods
  * Place in `sites/all/libraries/json2/json2.js`
  * Or use the [Drupal project](https://drupal.org/project/json2).
-
-Otherwise, just put these two resources in your libraries folder.
 
 ###Local Storage
 This module sets up in-browser key/value localStorage with the convenient jStorage abstraction library.
@@ -48,11 +46,11 @@ $.jStorage.set('mySave', JSON.stringify(myObj));
 // Later access and use.
 var myVal = JSON.parse($.jStorage.get('mySave'));
 alert(myVal.thing + ' = ' + (myObj.cost * myObj.percent * .01));
-// Output 'something = 0.81'
+// Outputs: something = 0.81
 ```
 
 ###Module Provided User Space
-To stash a single user property it's recommended to use a `user.property` key format. One of the most basic features is just knowing
+To stash a single user property it's **recommended** to use a `user.property` key format. One of the most basic features is just knowing
 where a user came from. Find that info organized like this...
 ```json
 {
@@ -67,29 +65,35 @@ where a user came from. Find that info organized like this...
   }
 }
 ```
-To access user storage, it's recommended that you wait until the object is available. There can be a
+To access user storage, it's **highly recommended** that you ensure the object is available. There can be a
 very small amount of time associated with jQuery + jStorage setup, additionally this keeps JS include
-order irrelevant which is good for robustness.
+order irrelevant which is good for robustness. _This is the only example that includes the full closure._
 ```javascript
 (function ($) {
-  $(document).ready(function() {
-    // Ensure data availability. Rebuild/reuse/
-    Drupal.settings.semi_anonymous.userDeferred = Drupal.settings.semi_anonymous.userDeferred || $.Deferred();
-    Drupal.settings.semi_anonymous.userDeferred.done(function () {
+  Drupal.behaviors.my_module = {
+    attach: function (context, settings) {
+      if (context === document) {
 
-      // Grab the user property.
-      var origin = JSON.parse($.jStorage.get('user.origin'));
-      alert(origin.url);
+        // Ensure data availability.
+        settings.semi_anonymous.userDeferred = settings.semi_anonymous.userDeferred || $.Deferred();
 
-      // Store your own items.
-      myObj.thingComponent = 'Some component';
-      myObj.anotherComponent = 'Another component';
-      $.jStorage.set('user.thing', JSON.stringify(myObj));
+        settings.semi_anonymous.userDeferred.done(function () {
+          // Act on a user property.
+          var origin = JSON.parse($.jStorage.get('user.origin'));
+          doSomethingNeato(origin.url);
 
-      // Get it on some later page.
-      var myVal = JSON.parse($.jStorage.get('user.thing'));
+          // Store your own items.
+          myObj.thing = 'Some component';
+          myObj.another = 'Another component';
+          $.jStorage.set('user.thing', JSON.stringify(myObj));
+
+          // Get it on some later page.
+          var myVal = JSON.parse($.jStorage.get('user.thing'));
+        }
+
+      }
     }
-  });
+  };
 })(jQuery);
 ```
 
