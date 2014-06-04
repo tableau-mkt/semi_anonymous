@@ -15,9 +15,20 @@ Track in order to react to anonymous user behavior.
 ##Getting started
 This Drupal module does several things, which may independently solve your need. It provides in-browser localStorage space, outputs Drupal page meta data, stores a user "origins," and handles stashing of client-side activity data.
 
+### Dependencies
+Both have a Drupal project if you prefer to register your libraries. Do one of the following for each.
+1. [jStorage](http://jstorage.info) localStorage abstraction library.
+ * Place in `sites/all/libraries/jstorage/jstorage.min.js`
+ * Or use the ([Drupal project](https://drupal.org/project/jstorage_lib).
+2. [JSON2](https://github.com/douglascrockford/JSON-js) better JSON methods
+ * Place in `sites/all/libraries/json2/json2.js`
+ * Or use the [Drupal project](https://drupal.org/project/json2).
+
+Otherwise, just put these two resources in your libraries folder.
+
 ###Local Storage
-This module sets up the key/value jStorage localStorage abstraction library, which is super easy to use.
-See the jStorage site for more info: [jstorage.info](http://www.jstorage.info).
+This module sets up in-browser key/value localStorage with the convenient jStorage abstraction library.
+_See the jStorage site for more info._
 ```javascript
 // Set a value on one page.
 $.jStorage.set('myThing', 'neato');
