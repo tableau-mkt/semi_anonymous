@@ -1,6 +1,6 @@
 Semi Anonymous
 ==============
-Track in order to react to anonymous user behavior.
+Profile anonymous users.
 
 * __[Getting started](#getting-started)__
  * [Local storage](#local-storage) - how the data storage works
@@ -12,8 +12,11 @@ Track in order to react to anonymous user behavior.
  * Stash and retrieve your own activities with ease!
 * __[Advanced use](#advanced-use)__
 
-##Getting started
+## Getting started
 This Drupal module does several things, which may independently solve your need. It provides in-browser localStorage space, outputs Drupal page meta data, stores a user "origins," and handles stashing of client-side activity data.
+
+### Issues
+Please post any problems or feature requests to the [Drupal project issue queue](https://drupal.org/project/issues/semi_anonymous).
 
 ### Dependencies
 Both have a Drupal project if you prefer to register your libraries. Do one of the following for each.
@@ -25,7 +28,7 @@ Both have a Drupal project if you prefer to register your libraries. Do one of t
  * Place in `sites/all/libraries/json2/json2.js`
  * Or use the [Drupal project](https://drupal.org/project/json2).
 
-###Local Storage
+### Local Storage
 This module sets up in-browser key/value localStorage with the convenient jStorage abstraction library.
 _See the jStorage site for more info._
 ```javascript
@@ -49,7 +52,7 @@ alert(myVal.thing + ' = ' + (myObj.cost * myObj.percent * .01));
 // Outputs: something = 0.81
 ```
 
-###Module Provided User Space
+### Module Provided User Space
 To stash a single user property it's **recommended** to use a `user.property` key format. One of the most basic features is just knowing
 where a user came from. Find that info organized like this...
 ```json
@@ -97,7 +100,7 @@ order irrelevant which is good for robustness. _This is the only example that in
 })(jQuery);
 ```
 
-###Meta Data Output
+### Meta Data Output
 In order to do fun and fancy things on the client-side it's nice to have easy access to the meta data
 about the pages of your site. This modules helps output that info. You could get some of this from the
 DOM, but it's good to be sure. _You could use this feature and skip all other localStorage features._
@@ -135,7 +138,7 @@ if (typeof Drupal.settings.semi_anonymous_meta.taxonomy.my_category !== 'undefin
 }
 ```
 
-##Activity Tracking
+## Activity Tracking
 A user's browsing history is stored per page view. This is an example record, which includes data from taxonomy term hit tracking being enabled...
 ```json
 {
@@ -161,7 +164,7 @@ $.each(Drupal.SemiAnon.getActivities('browsing'), function (key, record) {
 ```
 If you want to get fancier with your processing, read on to [Advanced Use](#advanced-use).
 
-###Favorite Terms
+### Favorite Terms
 There's no point in stashing user activity unless you use it. Because we know how many
 times a person has seen specific tags, we can infer a person's favorite terms from their
 rich browsing history records. _NOTE: A vocabulary can have more than one term returned
@@ -229,7 +232,7 @@ Results will be extended compared to the above, like this...
 }
 ```
 
-##Custom Tracking!
+## Custom Tracking!
 You can register your own tracking activities like this...
 ```javascript
 // Track your own activities.
@@ -254,7 +257,7 @@ They will be stored and come back like this; filtered down to the group specifie
 }
 ```
 
-##Advanced Use
+## Advanced Use
 Because records are returned as an object, you can directly access them once retrieved. Example...
 ```javascript
 var myActivities = Drupal.SemiAnon.getActivities('my_activity');
@@ -285,7 +288,7 @@ for (int = 0; i >= myResults.size(); i++) {
 * `size()` Returns an int, just like `myArray.length`
 * `get()` Returns the object you passed in, incase via function.
 
-##Tests?
+## Tests?
 This module does not yet have client-side testing implemented. The plan is to use QUnit and Grunt
 to run unit testing of all JS functions. There is also some behavioral tests needed to confirm tracking
 and activities. This may need phantom. You are welcome to help with all of these efforts :)
