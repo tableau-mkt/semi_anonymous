@@ -52,7 +52,7 @@
    * return {object}
    *   List of vocabs with top taxonomy term and count.
    */
-  Drupal.SemiAnon.getFavoriteTerms = function (returnAll) {
+  Drupal.SemiAnon.getFavoriteTerms = function () {
     var returnAll = (typeof returnAll === 'undefined') ? false : returnAll,
         results = Drupal.SemiAnon.getActivities('browsing'), // Collection not needed.
         pages = [], // In order to de-dupe.
@@ -60,16 +60,16 @@
         topTerms = {}; // Top only return.
 
     // Walk through tracking records.
-    for (key in results) {
+    for (var key in results) {
       // Only count once.
       if (typeof pages[results[key].url] === 'undefined' && results[key].hasOwnProperty('taxonomy')) {
         // For de-duping URL hits.
         pages[results[key].url] = true;
 
         // Walk through vocabs.
-        for (vocName in results[key].taxonomy) {
+        for (var vocName in results[key].taxonomy) {
           // Walk through terms.
-          for (tid in results[key].taxonomy[vocName]) {
+          for (var tid in results[key].taxonomy[vocName]) {
             // Non-existant vocab.
             if (!returnTerms.hasOwnProperty(vocName)) {
               returnTerms[vocName] = {};
@@ -92,20 +92,20 @@
     // Reduce to just top terms per vocab. #3737
     if (!returnAll) {
       // Walk through vocabs.
-      for (vocName in returnTerms) {
+      for (var vocName in returnTerms) {
         var topCount = 0;
 
         // Walk through terms, to find top count.
-        for (tid in returnTerms[vocName]) {
+        for (var tid in returnTerms[vocName]) {
           // Find top term hit count.
           if (returnTerms[vocName][tid].count > topCount) {
             topCount = returnTerms[vocName][tid].count;
           }
         }
         // Walk through terms, again, to collect top terms.
-        for (tid in returnTerms[vocName]) {
+        for (var tid in returnTerms[vocName]) {
           // Find top term hit count.
-          if (returnTerms[vocName][tid].count == topCount) {
+          if (returnTerms[vocName][tid].count === topCount) {
             if (!topTerms.hasOwnProperty(vocName)) {
               topTerms[vocName] = {};
             }
@@ -137,7 +137,7 @@
 
     if (group) {
       // Remove unwanted types and return records.
-      for (i in results) {
+      for (var i in results) {
         if (results[i].indexOf('track.' + group) === 0) {
           returnVals[results[i]] = JSON.parse($.jStorage.get(results[i]));
         }
@@ -145,7 +145,7 @@
     }
     else {
       // Collect and return all.
-      for (i in results) returnVals[results[i]] = JSON.parse($.jStorage.get(results[i]));
+      for (var i in results) returnVals[results[i]] = JSON.parse($.jStorage.get(results[i]));
     }
 
     return returnVals;
@@ -241,7 +241,7 @@
       get : function () {
         return obj;
       }
-    }
+    };
   };
 
 })(jQuery);
