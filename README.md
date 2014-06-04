@@ -17,6 +17,7 @@ This Drupal module does several things, which may independently solve your need.
 
 ### Dependencies
 Both have a Drupal project if you prefer to register your libraries. Do one of the following for each.
+
 1. [jStorage](http://jstorage.info) localStorage abstraction library.
  * Place in `sites/all/libraries/jstorage/jstorage.min.js`
  * Or use the ([Drupal project](https://drupal.org/project/jstorage_lib).
