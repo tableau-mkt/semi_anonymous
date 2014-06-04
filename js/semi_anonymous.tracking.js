@@ -92,24 +92,24 @@
     // Reduce to just top terms per vocab. #3737
     if (!returnAll) {
       // Walk through vocabs.
-      for (var vocName in returnTerms) {
+      for (var vocNameForTop in returnTerms) {
         var topCount = 0;
 
         // Walk through terms, to find top count.
-        for (var tid in returnTerms[vocName]) {
+        for (var tidForCount in returnTerms[vocNameForTop]) {
           // Find top term hit count.
-          if (returnTerms[vocName][tid].count > topCount) {
-            topCount = returnTerms[vocName][tid].count;
+          if (returnTerms[vocNameForTop][tidForCount].count > topCount) {
+            topCount = returnTerms[vocNameForTop][tidForCount].count;
           }
         }
         // Walk through terms, again, to collect top terms.
-        for (var tid in returnTerms[vocName]) {
+        for (var tidForTop in returnTerms[vocNameForTop]) {
           // Find top term hit count.
-          if (returnTerms[vocName][tid].count === topCount) {
-            if (!topTerms.hasOwnProperty(vocName)) {
-              topTerms[vocName] = {};
+          if (returnTerms[vocNameForTop][tidForTop].count === topCount) {
+            if (!topTerms.hasOwnProperty(vocNameForTop)) {
+              topTerms[vocNameForTop] = {};
             }
-            topTerms[vocName][tid] = returnTerms[vocName][tid];
+            topTerms[vocNameForTop][tidForTop] = returnTerms[vocNameForTop][tidForTop];
           }
         }
       }
@@ -145,7 +145,9 @@
     }
     else {
       // Collect and return all.
-      for (var i in results) returnVals[results[i]] = JSON.parse($.jStorage.get(results[i]));
+      for (var i2 in results) {
+        returnVals[results[i2]] = JSON.parse($.jStorage.get(results[i2]));
+      }
     }
 
     return returnVals;
@@ -209,8 +211,10 @@
        *   Size of the object.
        */
       size : function () {
+        if (obj == null) return 0;
         if (length === null) {
           length = 0;
+          //this.obj.keys().length
           for (var key in obj) length++;
         }
         return length;

@@ -192,7 +192,7 @@ var favTerms = Drupal.SemiAnon.getFavoriteTerms(),
 
 // Ensure a favorite exists for desired vocab.
 if (typeof favTerms.my_category != 'undefined') {
-  for (tid in favTerms.my_category) {
+  for (var tid in favTerms.my_category) {
     if (!onlyOnce && favTerms.my_category.tid.count > myThreshold) {
       // Use user profiling to react!
       doSomeCoolAjaxThing(tid, termCount);
@@ -280,7 +280,7 @@ var myResults = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities('my
 
 // Use the number of activities to output almost the same thing you'd get from iterating
 // over the Drupal.SemiAnon.getActivities('my_activity') function.
-for (int = 0; i >= myResults.size(); i++) {
+for (var int = 0; i >= myResults.size(); i++) {
   console.log(resultsObjects[resultsKeys[i]]);
 }
 ```
