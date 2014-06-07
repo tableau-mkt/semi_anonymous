@@ -133,11 +133,12 @@
    */
   Drupal.SemiAnon.getActivities = function (group) {
     var results = $.jStorage.index(),
-        returnVals = {};
+        returnVals = {},
+        i = 0;
 
     if (group) {
       // Remove unwanted types and return records.
-      for (var i in results) {
+      for (i in results) {
         if (results[i].indexOf('track.' + group) === 0) {
           returnVals[results[i]] = JSON.parse($.jStorage.get(results[i]));
         }
@@ -145,8 +146,8 @@
     }
     else {
       // Collect and return all.
-      for (var i2 in results) {
-        returnVals[results[i2]] = JSON.parse($.jStorage.get(results[i2]));
+      for (i in results) {
+        returnVals[results[i]] = JSON.parse($.jStorage.get(results[i]));
       }
     }
 
@@ -215,7 +216,7 @@
         if (length === null) {
           length = 0;
           //this.obj.keys().length
-          for (var key in obj) length++;
+          for (var k in obj) length++;
         }
         return length;
       },
