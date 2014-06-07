@@ -30,18 +30,32 @@
 
   module('Semi Anonymous: Basics');
 
-  // Init tests.
-  test('Namespace exists', function () {
+  test('Init tests', function () {
+    expect(3);
+    ok($.jStorage.storageAvailable(), 'Storage object exists');
+    ok((typeof $.jStorage === "object"), 'Storage object is an object');
+    ok((typeof $.jStorage.index()), 'Index is available');
+  });
+
+  test('Namespaces created', function () {
     expect(2);
     ok(Drupal.SemiAnon, 'Main namespace exists');
     ok((typeof Drupal.SemiAnon === "object"), 'Namespace object is an object');
   });
 
-  test('Storage space exists', function () {
+  test('Collection class works', function () {
     expect(3);
-    ok($.jStorage.storageAvailable(), 'Storage object exists');
-    ok((typeof $.jStorage === "object"), 'Storage object is an object');
-    ok((typeof $.jStorage.index()), 'Index is available');
+    var testObj = {
+      'thing': 'blah',
+      'another': 5,
+      'final': 'yup'
+    },
+    testAry = ['thing', 'another', 'final'],
+    stuff = new Drupal.SemiAnon.Collection(testObj);
+
+    ok(stuff.size() === 3, 'Collection size function reports correctly');
+    deepEqual(stuff.keys().sort(), testAry.sort(), 'Collection keys function reports correctly');
+    deepEqual(stuff.get(), testObj, 'Collection getter return correctly');
   });
 
 
@@ -59,7 +73,7 @@
 
   module('Semi Anonymous: Tracking');
 
-  test('Tracking scafolding', function() {
+  test('Tracking scafolding present', function() {
     var functions = [
       'getFavoriteTerms',
       'getActivities',
@@ -71,6 +85,14 @@
     for (var f in functions) {
       strictEqual(typeof Drupal.SemiAnon[functions[f]], 'function', 'Function exists: ' + functions[f]);
     }
+  });
+
+  test('Tracking activities work', function() {
+    expect(0);
+    // Create record.
+
+    // Create multiple records.
+
   });
 
 }(jQuery));
