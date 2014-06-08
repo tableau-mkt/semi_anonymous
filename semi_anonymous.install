@@ -20,6 +20,7 @@ function semi_anonymous_page_uninstall() {
     'semi_anonymous_track_meta',
     'semi_anonymous_track_term_hits',
     'semi_anonymous_track_term_vocabs',
+    'semi_anonymous_auto_filter_toggle'
   );
 
   foreach ($variables as $variable) {

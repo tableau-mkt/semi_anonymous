@@ -4,6 +4,11 @@
  * Client-side data space.
  */
 
+// Constants.
+define('SEMI_ANON_THRESHOLD', 3);
+define('SEMI_ANON_EXTENT', 100);
+
+
 /**
  * Implements hook_help().
  */
@@ -12,6 +17,17 @@ function semi_anonymous_help($path, $arg) {
     case 'admin/help#semi_anonymous':
       return t("Provide standardized space, adds page meta data, and will handle stashing for client-side tracking and reactions to user behavior. This module is particularly intended for folks who use Varnish caching and have very little server-side interaction for anonymous users.");
   }
+}
+
+
+/**
+ * Implements hook_views_api().
+ */
+function semi_anonymous_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'semi_anonymous') . '/views',
+  );
 }
 
 
@@ -41,68 +57,6 @@ function semi_anonymous_preprocess_html(&$variables) {
   $ouput_data = array();
   $m = 'semi_anonymous_';
 
-  // Add details about the page.
-  if (variable_get($m . 'add_page_meta', FALSE) || variable_get($m . 'track_term_hits', FALSE)) {
-    $type = false;
-    if ($obj = _semi_anonymous_menu_get_any_object($type)) {
-      // Drop page meta data onto output object.
-      if(variable_get($m . 'add_page_meta', FALSE) && $type) {
-        // Explicit additions.
-        // Add new items to the array in _semi_anonymous_collect_meta().
-        $ouput_data['entityType'] = $type;
-        $ouput_data['bundle'] = (isset($obj->type)) ? $obj->type : false;
-
-        // Output various entity properties. Allow additions/alterations.
-        // NOTE: Properties mean different things on different entity types.
-        $properties = _semi_anonymous_collect_meta();
-        $selected_properties = variable_get('semi_anonymous_track_meta');
-
-        foreach ($properties as $p) {
-          // Include all in output, only entity valid.
-          if (isset($obj->$p)) {
-            $ouput_data[$p] = $obj->$p;
-          }
-        }
-
-        // If tracking meta data is specifically selected.
-        if (count($selected_properties) > 0) {
-          $tracking = array();
-          foreach ($ouput_data as $prop => $value) {
-            if ($selected_properties[$prop] !== 0) {
-              $tracking[] = $prop;
-            }
-          }
-          drupal_add_js(array('semi_anonymous_tracking' => $tracking), 'setting');
-        }
-      }
-
-      // Output term tracking.
-      // Tell the client-side which tags are present on this entity.
-      if (variable_get($m . 'track_page', FALSE)) {
-        // Meta data while on a term page.
-        if ($type == 'taxonomy_term') {
-          $ouput_data['taxonomy'] = array($obj->vocabulary_machine_name => $obj->tid);
-        }
-        else {
-          // Meta data on content.
-          if ($terms = _semi_anonymous_get_entity_terms($type, $obj->type, $obj)) {
-            $ouput_data['taxonomy'] = $terms;
-          }
-        }
-      }
-
-      // Allow for term tracking.
-      if (variable_get($m . 'track_term_hits', FALSE)) {
-        drupal_add_js(array('semi_anonymous' => array('track_term_hits' => true)), 'setting');
-        drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
-      }
-    }
-  }
-  // Output page meta data.
-  if (!empty($ouput_data)) {
-    drupal_add_js(array('semi_anonymous_meta' => $ouput_data), 'setting');
-  }
-
   // Add basic assets.
   if (variable_get($m . 'include', TRUE)) {
     // JSON2.
@@ -127,23 +81,86 @@ function semi_anonymous_preprocess_html(&$variables) {
     }
   }
 
+  // Add user origin asset.
+  if (variable_get($m . 'store_user_origins', TRUE)) {
+    drupal_add_js(array('semi_anonymous' => array('userDeferred' => false)), 'setting');
+    drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.users.js');
+  }
+
+  // Add details about the page.
+  if (variable_get($m . 'add_page_meta', FALSE) || variable_get($m . 'track_term_hits', FALSE)) {
+    $type = false;
+    if ($obj = _semi_anonymous_menu_get_any_object($type)) {
+
+      // Drop page meta data onto output object.
+      if(variable_get($m . 'add_page_meta', FALSE) && $type) {
+        // Explicit additions.
+        // Add new items to the array in _semi_anonymous_collect_meta().
+        $ouput_data['entityType'] = $type;
+        $ouput_data['bundle'] = (isset($obj->type)) ? $obj->type : false;
+
+        // Output various entity properties. Allow additions/alterations.
+        // NOTE: Properties mean different things on different entity types.
+        $properties = _semi_anonymous_collect_meta();
+        $selected_properties = variable_get('semi_anonymous_track_meta', array());
+
+        foreach ($properties as $p) {
+          // Include all in output, only entity valid.
+          if (isset($obj->$p)) {
+            $ouput_data[$p] = $obj->$p;
+          }
+        }
+
+        // If tracking meta data is specifically selected.
+        if (count($selected_properties) > 0) {
+          $tracking = array();
+          foreach ($ouput_data as $prop => $value) {
+            if ($selected_properties[$prop] !== 0) {
+              $tracking[] = $prop;
+            }
+          }
+          drupal_add_js(array('semi_anonymous_tracking' => $tracking), 'setting');
+        }
+      }
+
+      // Output term tracking.
+      // Tell the client-side which tags are present on this entity.
+      if (variable_get($m . 'track_term_hits', FALSE)) {
+        // Meta data while on a term page.
+        if ($type == 'taxonomy_term') {
+          $ouput_data['taxonomy'] = array($obj->vocabulary_machine_name => $obj->tid);
+        }
+        else {
+          // Meta data on content.
+          if ($terms = _semi_anonymous_get_entity_terms($type, $obj->type, $obj)) {
+            $ouput_data['taxonomy'] = $terms;
+          }
+        }
+      }
+
+    }
+  }
+  // Output page meta data.
+  if (!empty($ouput_data)) {
+    drupal_add_js(array('semi_anonymous_meta' => $ouput_data), 'setting');
+  }
+
   // Add tracking setting(s) and asset.
   if (variable_get($m . 'track_browsing', FALSE)) {
+
+    // Get configs to the browser.
     drupal_add_js(
       array('semi_anonymous' => array(
-        'track_browsing' => true,
-        'track_browsing_extent' => variable_get('semi_anonymous_track_browsing_extent', 'false'),
+        'track_term_hits' => true,
+        'auto_filter_link_analysis' => variable_get('semi_anonymous_auto_filter_link_analysis', FALSE),
+        'auto_filter_threshold' => variable_get('semi_anonymous_auto_filter_threshold', SEMI_ANON_THRESHOLD),
+        'track_browsing_extent' => variable_get('semi_anonymous_track_browsing_extent', SEMI_ANON_EXTENT),
       )),
       'setting'
     );
     drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
   }
 
-  // Add user origin asset.
-  if (variable_get($m . 'store_user_origins', TRUE)) {
-    drupal_add_js(array('semi_anonymous' => array('userDeferred' => false)), 'setting');
-    drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.users.js');
-  }
 }
 
 

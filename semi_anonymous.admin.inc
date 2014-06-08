@@ -63,7 +63,7 @@ function semi_anonymous_settings_form($form_state) {
     '#states' => array(
       'enbled' => array(
         ':input[name="semi_anonymous_include"]' => array('checked' => TRUE),
-        ':input[name="semi_anonymous_track_page"]' => array('checked' => TRUE),
+        ':input[name="semi_anonymous_track_browsing"]' => array('checked' => TRUE),
       ),
     ),
     '#title' => t('How far back to track'),
@@ -75,7 +75,7 @@ function semi_anonymous_settings_form($form_state) {
       '2500' => t('2500 items'),
       '0' => t('All'),
     ),
-    '#default_value' => variable_get('semi_anonymous_track_browsing_extent', 25),
+    '#default_value' => variable_get('semi_anonymous_track_browsing_extent', SEMI_ANON_EXTENT),
     '#description' => t('Size of tracking history.'),
   );
   /*
@@ -134,7 +134,6 @@ function semi_anonymous_settings_form($form_state) {
         ':input[name="semi_add_page_meta"]' => array('checked' => TRUE),
       ),
     ),
-    '#title' => t('Meta data items'),
     '#default_value' => variable_get('semi_anonymous_track_meta', 0),
     '#options' => drupal_map_assoc($meta_data),
   );
@@ -147,13 +146,13 @@ function semi_anonymous_settings_form($form_state) {
     ),
     '#title' => t('Track term hits'),
     '#default_value' => variable_get('semi_anonymous_track_term_hits', FALSE),
-    '#description' => t('Tracks "hits" to terms present on content while browsing. Requires entity meta data and taxonomy output.'),
   );
   $form['content']['track_vocabs'] = array(
     '#type' => 'fieldset',
     '#title' => t('Vocabularies'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
+    '#description' => t('The vocabularies which should be output as meta data and tracked when recording "hits" to terms on content.'),
   );
   $form['content']['track_vocabs']['semi_anonymous_track_term_vocabs'] = array(
     '#type' => 'checkboxes',
@@ -162,10 +161,35 @@ function semi_anonymous_settings_form($form_state) {
         ':input[name="semi_anonymous_track_term_hits"]' => array('checked' => TRUE),
       ),
     ),
-    '#title' => t('Vocabulary'),
     '#default_value' => variable_get('semi_anonymous_track_term_vocabs', 0),
     '#options' => $v_options,
-    '#description' => t('The vocabularies which should be output as meta data and tracked when recording "hits" to terms on content.'),
+  );
+
+  $form['views'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Views'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 10,
+  );
+  $form['views']['semi_anonymous_auto_filter_toggle'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Auto-filter toggle'),
+    '#default_value' => variable_get('semi_anonymous_auto_filter_toggle', FALSE),
+    '#description' => t("When enabled (default), Views filters configured to use the this plugin will set filters with client-side user values. It's recommended Views should be AJAX. For performance reasons you may want to disable this. Hidden filters will stay hidden when disabled, but AJAX form submit will not be triggered."),
+  );
+  $form['views']['semi_anonymous_auto_filter_threshold'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#title' => t('Auto-filter threshold'),
+    '#default_value' => variable_get('semi_anonymous_auto_filter_threshold', SEMI_ANON_THRESHOLD),
+    '#description' => t("Set the browsing history term hit count required to auto-trigger a filter. You want to be sure a user's interest is real before you change the UX."),
+  );
+  $form['views']['semi_anonymous_auto_filter_link_analysis'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Add link analysis params'),
+    '#default_value' => variable_get('semi_anonymous_auto_filter_link_analysis', FALSE),
+    '#description' => t("In order to track successful conversions from links within auto-filtered Views, you can add analysis query params with the name of the View block, display, and filter value."),
   );
 
   return system_settings_form($form);

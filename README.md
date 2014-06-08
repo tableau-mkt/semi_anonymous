@@ -5,21 +5,23 @@ Profile anonymous users.
 * __[Getting started](#getting-started)__
  * [Local storage](#local-storage) - how the data storage works
  * [User data space](#module-provided-user-space) - standardized and guaranteed
- * [Page meta data](#meta-data-output) - available properties
-* __[Pageview tracking](#activity-tracking)__
+ * [Page meta data](#meta-data-output) - get page data to the browser
+* __[User Profiling](#user-profiling)__
+ * [Pageview tracking](#activity-tracking) - collect the usage data
  * [Favorite terms](#favorite-terms) - accessing aggregated profiling
+ * [Views auto-filter](#views-auto-filtering) - easily use profiling intelligence!
 * __[Custom tracking](#custom-tracking)__
- * Stash and retrieve your own activities with ease!
+ * Stash and retrieve your own activities
 * __[Advanced use](#advanced-use)__
 
 ## Getting started
-This Drupal module does several things, which may independently solve your need. It provides in-browser localStorage space, outputs Drupal page meta data, stores a user "origins," and handles stashing of client-side activity data.
+This Drupal module does several things, which may independently solve your need.
+It provides in-browser localStorage space, outputs Drupal page meta data, stores a user "origins," and handles stashing of client-side activity data.
 
-### Issues
-Please post any problems or feature requests to the [Drupal project issue queue](https://drupal.org/project/issues/semi_anonymous).
+If you don't want to look under the hood, skip to [page meta data](#meta-data-output) for admin setup, and then to [views auto-filter](#views-auto-filtering) for magically setting exposed filters.
 
 ### Dependencies
-Both have a Drupal project if you prefer to register your libraries. Do one of the following for each.
+Both library dependencies have a Drupal project if you prefer to register your libraries. Do one of the following for each.
 
 1. [jStorage](http://jstorage.info) localStorage abstraction library.
  * Place in `sites/all/libraries/jstorage/jstorage.min.js`
@@ -27,6 +29,12 @@ Both have a Drupal project if you prefer to register your libraries. Do one of t
 2. [JSON2](https://github.com/douglascrockford/JSON-js) better JSON methods
  * Place in `sites/all/libraries/json2/json2.js`
  * Or use the [Drupal project](https://drupal.org/project/json2).
+
+### Issues
+Please post any problems or feature requests to the
+[Drupal project issue queue](https://drupal.org/project/issues/semi_anonymous).
+
+---
 
 ### Local Storage
 This module sets up in-browser key/value localStorage with the convenient jStorage abstraction library.
@@ -53,8 +61,7 @@ alert(myVal.thing + ' = ' + (myObj.cost * myObj.percent * .01));
 ```
 
 ### Module Provided User Space
-To stash a single user property it's **recommended** to use a `user.property` key format. One of the most basic features is just knowing
-where a user came from. Find that info organized like this...
+To stash a single user property it's **recommended** to use a `user.property` key format. One of the most basic features is just knowing where a user came from. Find that info organized like this...
 ```json
 {
   "user.origin" : {
@@ -68,9 +75,7 @@ where a user came from. Find that info organized like this...
   }
 }
 ```
-To access user storage, it's **highly recommended** that you ensure the object is available. There can be a
-very small amount of time associated with jQuery + jStorage setup, additionally this keeps JS include
-order irrelevant which is good for robustness. _This is the only example that includes the full closure._
+To access user storage, it's **highly recommended** that you ensure the object is available. There can be a very small amount of time associated with jQuery + jStorage setup, additionally this keeps JS include order irrelevant which is good for robustness. _This is the only example that includes the full closure._
 ```javascript
 (function ($) {
   Drupal.behaviors.my_module = {
@@ -101,11 +106,10 @@ order irrelevant which is good for robustness. _This is the only example that in
 ```
 
 ### Meta Data Output
-In order to do fun and fancy things on the client-side it's nice to have easy access to the meta data
-about the pages of your site. This modules helps output that info. You could get some of this from the
-DOM, but it's good to be sure. _You could use this feature and skip all other localStorage features._
-You can configure what gets pushed out as well as add and alter what's available via a custom module
-by implementing the `hook_semi_anonymous_output_properties()` and/or `hook_semi_anonymous_meta_alter()` functions.
+In order to do fun and fancy things on the client-side it's nice to have easy access to the meta data about the pages of your site.
+This modules helps output that info. You could get some of this from the DOM, but it's good to be sure.
+_You could use this feature and skip all other localStorage features._
+You can configure what gets pushed out as well as add and alter what's available via a custom module by implementing the `hook_semi_anonymous_output_properties()` and/or `hook_semi_anonymous_meta_alter()` functions.
 Here's _some_ of what's available by default...
 ```json
 {
@@ -138,7 +142,11 @@ if (typeof Drupal.settings.semi_anonymous_meta.taxonomy.my_category !== 'undefin
 }
 ```
 
-## Activity Tracking
+## User Profiling
+A major portion of this module's purpose is client-side storage is user profiling.
+Data gets tracked, we analyze it, then we can react in fancy ways without the need for a user account.
+
+### Activity Tracking
 A user's browsing history is stored per page view. This is an example record, which includes data from taxonomy term hit tracking being enabled...
 ```json
 {
@@ -165,10 +173,7 @@ $.each(Drupal.SemiAnon.getActivities('browsing'), function (key, record) {
 If you want to get fancier with your processing, read on to [Advanced Use](#advanced-use).
 
 ### Favorite Terms
-There's no point in stashing user activity unless you use it. Because we know how many
-times a person has seen specific tags, we can infer a person's favorite terms from their
-rich browsing history records. _NOTE: A vocabulary can have more than one term returned
-if the hit count is the same._ For clarity here's what you get...
+There's no point in stashing user activity unless you use it. Because we know how many times a person has seen specific tags, we can infer a person's favorite terms from their rich browsing history records. _NOTE: A vocabulary can have more than one term returned if the hit count is the same._ For clarity here's what you get...
 ```json
 {
   "my_category" : {
@@ -231,6 +236,38 @@ Results will be extended compared to the above, like this...
   },
 }
 ```
+
+### Views Auto-filtering
+Luckily you don't actually have to care about how the storage works. There's
+Views integration, and admin UI.
+1. Add an exposed filter to a block View.
+2. Select the "Semi Anonymous Auto-filter" View plugin on the display.
+3. Pick which exposed filters should auto-filter with tracking data by adding a value to the plugin config input.
+To match the filter vocabulary with the tracking vocabulary use a `taxonomy:my_vocabulary` syntax.
+To filter using some other value in localStorage, use that key.
+Example `user.thing` or `my_thing`, etc.
+4. Choose to hide/show the filter.
+5. Save View and test on the page with the block.
+
+That's it. It's recommended while you test this on your site that you leave the
+filters un-hidden. This will allow you to establish the right threshold and
+confirm tracking is powering your filters.
+
+#### Multiple Filters
+Take careful note of using OR / AND between multiple exposed filter empowered
+with auto-filtering. You want to lean toward the side of OR queries.
+
+#### "Echo Effect"
+User's still need a way to find the content they like in order to power your profiling to begin with.
+Often, this tool should be used within recommendation UX areas, not core content navigation patterns.
+To avoid the "echo effect" (just self-reinfocing user profiling) you need to offer other ways to find content.
+Responsibly mix navigation methods.
+
+#### Analysis
+To perform easy analysis of click conversions on auto-filtered content, query
+params can be added. This includes the View block, display as well as the filter
+value used.
+
 
 ## Custom Tracking!
 You can register your own tracking activities like this...
