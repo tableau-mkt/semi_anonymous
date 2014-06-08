@@ -138,12 +138,15 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
       if (favData.hasOwnProperty(vocab) && (favData.vocab.count >= Drupal.settings.semi_anonymous.auto_filter_threshold)) {
         // Handle mulitple terms due to event count.
         // Pop the first poperty of the object.
+        // @todo Try using .pop() instead.
         for (tid in favData.vocab) {
           if (!onlyOnce) {
             userValue = favData.property;
             onlyOnce = true;
           }
-          else break;
+          else {
+            break; 
+          }
         }
       }
     }

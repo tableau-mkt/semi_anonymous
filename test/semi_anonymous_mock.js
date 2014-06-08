@@ -3,6 +3,15 @@
  * Fakes environment variables, settings found within Drupal.
  */
 
+(function($) {
+
+  // Clear out past tests, unless explicitly not.
+  if (!location.href.match(/\?noflush\=|&noflush\=/)) {
+    $.jStorage.flush();
+  }
+
+})(jQuery);
+
 window.Drupal = {
   "behaviors": {},
   "settings": {

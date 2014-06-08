@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Semi Anonymous testing with with QUnit</title>
+  <title>Semi Anonymous | QUnit testing</title>
   <!-- Load local jQuery. This can be overridden with a ?jquery=___ param. -->
   <script src="../libs/jquery-loader.js"></script>
   <!-- Load local QUnit. -->
@@ -20,10 +20,12 @@
        ARE TESTING A PLUGIN HERE, THIS HELPS ENSURE BEST PRACTICES. REALLY. -->
   <script>window._$ = jQuery.noConflict(true);</script>
   <!-- Mocking up Drupal -->
-  <script>Drupal.behaviors.semi_anonymous_user.attach(document);</script>
+  <script>
+    Drupal.behaviors.semi_anonymous_user.attach(window.document, Drupal.settings);
+    Drupal.behaviors.semi_anonymous_tracking.attach(window.document, Drupal.settings);
+  </script>
 </head>
 <body>
-  <h1>Test Semi Anonymous JS behavior and functions.</h1>
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
 </body>

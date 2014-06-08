@@ -42,7 +42,6 @@
 
         // Stash it.
         Drupal.SemiAnon.createActivity('browsing', JSON.stringify(trackVal));
-
       }
     }
   };
@@ -210,7 +209,7 @@
    */
   Drupal.SemiAnon.Collection = function (obj) {
     // Private vars.
-    var keyList = null,
+    var keyList = [],
         length = null;
 
     // Public functions.
@@ -225,8 +224,8 @@
        *   List of object properties.
        */
       keys : function() {
-        if (keyList === null) {
-          keyList = [];
+        if (obj == null) return 0;
+        if (keyList.length === 0) {
           for (var key in obj) keyList.push(key);
         }
         return keyList.sort();
