@@ -8,6 +8,8 @@
 
   // Namespace for functions.
   Drupal.SemiAnon = Drupal.SemiAnon || {};
+  // Make favorites "static".
+  Drupal.SemiAnon.FavoriteTerms = false;
 
   // Act on the page load.
   Drupal.behaviors.semi_anonymous_tracking = {
@@ -49,76 +51,87 @@
   /**
    * Use browsing history and find user's top terms.
    *
+   * @param
+   * 
    * return {object}
    *   List of vocabs with top taxonomy term and count.
    */
-  Drupal.SemiAnon.getFavoriteTerms = function () {
-    var returnAll = (typeof returnAll === 'undefined') ? false : returnAll,
-        results = Drupal.SemiAnon.getActivities('browsing'), // Collection not needed.
+  Drupal.SemiAnon.getFavoriteTerms = function (returnAll) {
+    var results = Drupal.SemiAnon.getActivities('browsing'), // Collection not needed.
         pages = [], // In order to de-dupe.
         returnTerms = {}, // Return.
         topTerms = {}; // Top only return.
 
-    // Walk through tracking records.
-    for (var key in results) {
-      // Only count once.
-      if (typeof pages[results[key].url] === 'undefined' && results[key].hasOwnProperty('taxonomy')) {
-        // For de-duping URL hits.
-        pages[results[key].url] = true;
+    // Optional param.
+    returnAll = returnAll || false;
 
+    // Only build it once.
+    if(!Drupal.SemiAnon.FavoriteTerms) {
+
+      // Walk through tracking records.
+      for (var key in results) {
+        // Only count once.
+        if (typeof pages[results[key].url] === 'undefined' && results[key].hasOwnProperty('taxonomy')) {
+          // For de-duping URL hits.
+          pages[results[key].url] = true;
+
+          // Walk through vocabs.
+          for (var vocName in results[key].taxonomy) {
+            // Walk through terms.
+            for (var tid in results[key].taxonomy[vocName]) {
+              // Non-existant vocab.
+              if (!returnTerms.hasOwnProperty(vocName)) {
+                returnTerms[vocName] = {};
+              }
+
+              // Existing term, add to count.
+              if (returnTerms[vocName].hasOwnProperty(tid)) {
+                returnTerms[vocName][tid].count++;
+              }
+              else {
+                // New, add it on and create count.
+                returnTerms[vocName][tid] = { name: results[key].taxonomy[vocName][tid], count: 1 };
+              }
+            }
+          }
+
+        }
+      }
+
+      // Reduce to just top terms per vocab. #3737
+      if (!returnAll) {
         // Walk through vocabs.
-        for (var vocName in results[key].taxonomy) {
-          // Walk through terms.
-          for (var tid in results[key].taxonomy[vocName]) {
-            // Non-existant vocab.
-            if (!returnTerms.hasOwnProperty(vocName)) {
-              returnTerms[vocName] = {};
-            }
+        for (var vocNameForTop in returnTerms) {
+          var topCount = 0;
 
-            // Existing term, add to count.
-            if (returnTerms[vocName].hasOwnProperty(tid)) {
-              returnTerms[vocName][tid].count++;
+          // Walk through terms, to find top count.
+          for (var tidForCount in returnTerms[vocNameForTop]) {
+            // Find top term hit count.
+            if (returnTerms[vocNameForTop][tidForCount].count > topCount) {
+              topCount = returnTerms[vocNameForTop][tidForCount].count;
             }
-            else {
-              // New, add it on and create count.
-              returnTerms[vocName][tid] = { name: results[key].taxonomy[vocName][tid], count: 1 };
+          }
+          // Walk through terms, again, to collect top terms.
+          for (var tidForTop in returnTerms[vocNameForTop]) {
+            // Find top term hit count.
+            if (returnTerms[vocNameForTop][tidForTop].count === topCount) {
+              if (!topTerms.hasOwnProperty(vocNameForTop)) {
+                topTerms[vocNameForTop] = {};
+              }
+              topTerms[vocNameForTop][tidForTop] = returnTerms[vocNameForTop][tidForTop];
             }
           }
         }
 
+        Drupal.SemiAnon.FavoriteTerms = topTerms;
       }
-    }
-
-    // Reduce to just top terms per vocab. #3737
-    if (!returnAll) {
-      // Walk through vocabs.
-      for (var vocNameForTop in returnTerms) {
-        var topCount = 0;
-
-        // Walk through terms, to find top count.
-        for (var tidForCount in returnTerms[vocNameForTop]) {
-          // Find top term hit count.
-          if (returnTerms[vocNameForTop][tidForCount].count > topCount) {
-            topCount = returnTerms[vocNameForTop][tidForCount].count;
-          }
-        }
-        // Walk through terms, again, to collect top terms.
-        for (var tidForTop in returnTerms[vocNameForTop]) {
-          // Find top term hit count.
-          if (returnTerms[vocNameForTop][tidForTop].count === topCount) {
-            if (!topTerms.hasOwnProperty(vocNameForTop)) {
-              topTerms[vocNameForTop] = {};
-            }
-            topTerms[vocNameForTop][tidForTop] = returnTerms[vocNameForTop][tidForTop];
-          }
-        }
+      else {
+        Drupal.SemiAnon.FavoriteTerms = returnTerms;
       }
 
-      return topTerms;
     }
-    else {
-      return returnTerms;
-    }
+
+    return Drupal.SemiAnon.FavoriteTerms;
   };
 
 
@@ -197,11 +210,27 @@
    */
   Drupal.SemiAnon.Collection = function (obj) {
     // Private vars.
-    var keys = null,
+    var keyList = null,
         length = null;
 
     // Public functions.
     return {
+
+      /**
+       * Get the property keys of an object.
+       *
+       * param {object} obj
+       *   Oject to be inspected.
+       * return {array}
+       *   List of object properties.
+       */
+      keys : function() {
+        if (keyList === null) {
+          keyList = [];
+          for (var key in obj) keyList.push(key);
+        }
+        return keyList.sort();
+      },
 
       /**
        * Get the size of an object.
@@ -214,27 +243,9 @@
       size : function () {
         if (obj == null) return 0;
         if (length === null) {
-          length = 0;
-          //this.obj.keys().length
-          for (var k in obj) length++;
+          length = this.keys().length;
         }
         return length;
-      },
-
-      /**
-       * Get the property keys of an object.
-       *
-       * param {object} obj
-       *   Oject to be inspected.
-       * return {array}
-       *   List of object properties.
-       */
-      keys : function () {
-        if (keys === null) {
-          keys = [];
-          for (var key in obj) keys.push(key);
-        }
-        return keys.sort();
       },
 
       /**

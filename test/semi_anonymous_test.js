@@ -54,7 +54,7 @@
     stuff = new Drupal.SemiAnon.Collection(testObj);
 
     ok(stuff.size() === 3, 'Collection size function reports correctly');
-    deepEqual(stuff.keys().sort(), testAry.sort(), 'Collection keys function reports correctly');
+    deepEqual(stuff.keys(), testAry.sort(), 'Collection keys function reports correctly');
     deepEqual(stuff.get(), testObj, 'Collection getter return correctly');
   });
 
