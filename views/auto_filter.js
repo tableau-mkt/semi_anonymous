@@ -9,7 +9,6 @@
 // Insurance.
 Drupal.SemiAnon = Drupal.SemiAnon || {};
 
-
 /**
  * Sniff out client-side Views auto-filters and use their settings to map
  * profiled user values to them and trigger AJAX results. NOTE: Options are set
@@ -17,6 +16,8 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
  */
 (function($) {
   $(document).ready(function() {
+
+/*
 
     // Little helper for coding once.
     var triggerFilters = function triggerFilters() {
@@ -37,9 +38,14 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
       });
     };
 
+*/
+
     /**
      * Trigger configured auto-filters.
      */
+
+/*
+
     // Confirm existance of filter forms.
     if ($('form').hasClass('semi-anonymous-auto-filter')) {
       // Use the user data.
@@ -48,8 +54,13 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
       });
     }
 
-  });
 
+*/
+
+
+
+
+  });
 
   /**
    * Add analytics to links within auto-filtered recommendations.
@@ -57,18 +68,21 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
    */
   Drupal.behaviors.semi_anonymous_link_analysis = {
     attach: function (context, settings) {
+      var $view,
+          $content,
+          glue;
 
       // Both page load and AJAX.
       if ((context === document || (context instanceof jQuery && context.is('form'))) && settings.semi_anonymous.auto_filter_link_analysis) {
 
         $.each(Drupal.SemiAnon.getAutoFilters(), function(index, $val) {
-          var $view = $val.closest('.view:visible'),
-              $content = $view.find('.view-content');
+          $view = $val.closest('.view:visible');
+          $content = $view.find('.view-content');
 
           $content.find('.views-row a, .view-content li a').each( function() {
             // Add query params if not already present (AJAX can cause duplication).
             if (typeof $(this).attr('href').split('filter=')[1] === 'undefined') {
-              var glue = '?';
+                glue = '?';
               if (typeof $(this).attr('href').split('?')[1] !== 'undefined') {
                 glue = '&';
               }
@@ -84,7 +98,6 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
     }
   };
 
-
   /**
    * Helper function to find valid filters.
    *
@@ -92,25 +105,35 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
    *   List of configured auto-filters on the page.
    */
   Drupal.SemiAnon.getAutoFilters = function() {
-    var filters = {};
+    var filters = {},
+        $view,
+        $filter,
+        id,
+        display,
+        selector;
+
     // Run all the marked Views forms.
     $('form.semi-anonymous-auto-filter').each(function() {
-      var $view = $(this).closest('.view'),
-          // Learn about this View.
-          id = Drupal.SemiAnon.getViewProperty($view.attr('class'), 'id'),
-          display = Drupal.SemiAnon.getViewProperty($view.attr('class'), 'display');
+      $view = $(this).closest('.view');
+      // Learn about this View.
+      id = Drupal.SemiAnon.getViewProperty($view.attr('class'), 'id');
+      display = Drupal.SemiAnon.getViewProperty($view.attr('class'), 'display');
 
+      // Walk through configured filters.
       $.each(Drupal.settings.semi_anonymous.views_filters[id][display], function(index, val) {
+        $filter = false;
         // Bit nuts, but filters can live within other views. Found out the hard way.
-        var selector = 'form#views-exposed-form-' + id.replace(/_/g,'-') + '-' + display.replace(/_/g,'-') + ' .views-widget-filter-' + index,
-            $filter = $view.find(selector);
+        selector = 'form#views-exposed-form-' + id.replace(/_/g,'-') + '-' + display.replace(/_/g,'-') + ' .views-widget-filter-' + index;
+        $filter = $view.find(selector);
 
         // Inital confirmation filter exists and mapping setting isn't empty.
-        if ($filter.length && val.data_property !== '') {
+        if ($filter && val.data_property !== '') {
+          // @todo DO NOT list by property, this is page wide.
           filters[val.data_property] = $filter;
         }
       });
     });
+
     return filters;
   };
 
@@ -175,37 +198,26 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
    *   Views property value.
    */
   Drupal.SemiAnon.getViewProperty = function(class_str, property) {
-    var ID_PREFIX = 'view-id-',
-        DISPLAY_PREFIX = 'view-display-id-',
-        classes = class_str.split(' '),
-        return_val = false,
-        id_class = false,
-        display_class = false;
+    var classes = class_str.split(' '),
+        pattern,
+        matched,
+        c;
 
     switch (property) {
       case 'id':
-        id_class = $.map(classes, function(c) {
-          return c.substr(0, ID_PREFIX.length) === ID_PREFIX;
-        });
-        if (id_class) {
-          return_val = id_class.substr(ID_PREFIX.length);
-        }
+        pattern = new RegExp('^view-id-(.+)');
         break;
 
       case 'display':
-        display_class = $.map(classes, function(d) {
-          return d.substr(0, DISPLAY_PREFIX.length) === DISPLAY_PREFIX;
-        });
-        if (display_class) {
-          return_val = display_class.substr(DISPLAY_PREFIX.length);
-        }
-        break;
-
-      default:
+        pattern = new RegExp('^view-display-id-(.+)');
         break;
     }
 
-    return return_val;
+    for(c in classes) {
+      if (matched = classes[c].match(pattern)) {
+        return matched[1];
+      } 
+    }
   };
 
 })(jQuery);

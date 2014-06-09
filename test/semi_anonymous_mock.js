@@ -17,7 +17,23 @@ window.Drupal = {
   "settings": {
     "semi_anonymous": {
       "track_term_hits": true,
-      "userDeferred": false
+      "userDeferred": false,
+      "auto_filter_link_analysis": true,
+      "auto_filter_threshold": 2,
+      "views_filters": {
+        "my_view": {
+          "block_1": {
+            "my_filter": {
+              "data_property": "special_category",
+              "hidden": false
+            },
+            "another_filter": {
+              "data_property": "my_types",
+              "hidden": false
+            }
+          }
+        }
+      }
     },
     "semi_anonymous_meta": {
       "nid": "123",

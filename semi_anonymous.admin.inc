@@ -174,8 +174,8 @@ function semi_anonymous_settings_form($form_state) {
   );
   $form['views']['semi_anonymous_auto_filter_toggle'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Auto-filter toggle'),
-    '#default_value' => variable_get('semi_anonymous_auto_filter_toggle', FALSE),
+    '#title' => t('Auto-filter toggle (on)'),
+    '#default_value' => variable_get('semi_anonymous_auto_filter_toggle', TRUE),
     '#description' => t("When enabled (default), Views filters configured to use the this plugin will set filters with client-side user values. It's recommended Views should be AJAX. For performance reasons you may want to disable this. Hidden filters will stay hidden when disabled, but AJAX form submit will not be triggered."),
   );
   $form['views']['semi_anonymous_auto_filter_threshold'] = array(
@@ -188,7 +188,7 @@ function semi_anonymous_settings_form($form_state) {
   $form['views']['semi_anonymous_auto_filter_link_analysis'] = array(
     '#type' => 'checkbox',
     '#title' => t('Add link analysis params'),
-    '#default_value' => variable_get('semi_anonymous_auto_filter_link_analysis', FALSE),
+    '#default_value' => variable_get('semi_anonymous_auto_filter_link_analysis', TRUE),
     '#description' => t("In order to track successful conversions from links within auto-filtered Views, you can add analysis query params with the name of the View block, display, and filter value."),
   );
 

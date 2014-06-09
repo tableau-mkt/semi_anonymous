@@ -30,13 +30,10 @@
 
   module('Semi Anonymous: Basics');
 
-  test('Init tests', 3, function () {
+  test('Init tests', 5, function () {
     ok($.jStorage.storageAvailable(), 'Storage object exists');
     ok((typeof $.jStorage === "object"), 'Storage object is an object');
     ok((typeof $.jStorage.index()), 'Index is available');
-  });
-
-  test('Namespaces created', 2, function () {
     ok(Drupal.SemiAnon, 'Main namespace exists');
     ok((typeof Drupal.SemiAnon === "object"), 'Namespace object is an object');
   });
@@ -73,6 +70,7 @@
     var origin = $.jStorage.get('user.origin'),
         session_origin = $.jStorage.get('user.session_origin');
 
+    // @todo Could perform param slice first or parse the URL for real.
     strictEqual(
       JSON.parse(origin).url.slice(-19),
       'semi_anonymous.html',
@@ -128,6 +126,41 @@
       'Second activity recorded'
     );
 
+  });
+
+
+  module('Views auto-filter');
+
+  test('Filters utilities', 3, function () {
+    var $block = $('#block-views-my-view-block-1');
+
+    strictEqual(
+      Drupal.SemiAnon.getViewProperty($block.find('.view').attr('class'), 'id'),
+      'my_view',
+      'View name returned correctly'
+    );
+    strictEqual(
+      Drupal.SemiAnon.getViewProperty($block.find('.view').attr('class'), 'display'),
+      'block_1',
+      'View display returned correctly'
+    );
+    ok(
+      Drupal.SemiAnon.getAutoFilters().special_category instanceof $,
+      'Filter list contains at least one jQuery DOM object'
+    );
+  });
+
+  test('List analysis', 2, function() {
+    var query = $('#block-views-my-view-block-1').find('.view-content a').first().attr('href').split('?')[1];
+
+    ok(
+       query.split('&')[0] === 'filter=special_category',
+      'Analysis filter param added to at least first link'
+    )
+    ok(
+      query.split('&')[1] === 'val=The one',
+      'Analysis value param added to at least first link'
+    )
   });
 
 }(jQuery));

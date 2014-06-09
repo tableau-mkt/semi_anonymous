@@ -14,19 +14,61 @@
   <script src="semi_anonymous_mock.js"></script>
   <script src="../js/semi_anonymous.users.js"></script>
   <script src="../js/semi_anonymous.tracking.js"></script>
+  <script src="../views/auto_filter.js"></script>
+  <script>
+    // Mock up drupal behaviors firing.
+    (function($) {
+      $(document).ready(function() {
+        Drupal.behaviors.semi_anonymous_user.attach(window.document, Drupal.settings);
+        Drupal.behaviors.semi_anonymous_tracking.attach(window.document, Drupal.settings);
+        Drupal.behaviors.semi_anonymous_link_analysis.attach(window.document, Drupal.settings);
+      });
+    })(jQuery);
+  </script>
   <script src="semi_anonymous_test.js"></script>
   <!-- Removing access to jQuery and $. But it'll still be available as _$, if
        you REALLY want to mess around with jQuery in the console. REMEMBER WE
        ARE TESTING A PLUGIN HERE, THIS HELPS ENSURE BEST PRACTICES. REALLY. -->
   <script>window._$ = jQuery.noConflict(true);</script>
-  <!-- Mocking up Drupal -->
-  <script>
-    Drupal.behaviors.semi_anonymous_user.attach(window.document, Drupal.settings);
-    Drupal.behaviors.semi_anonymous_tracking.attach(window.document, Drupal.settings);
-  </script>
 </head>
 <body>
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
+  <hr />
+  <div id="block-views-my-view-block-1" class"block block-views block-my-view-block-1 block-views-my-view-block-1">
+    <div class="view view-my-view view-id-my_view view-display-id-block_1">
+      <div "view-filters">
+        <form id="views-exposed-form-my-view-block-1" class="semi-anonymous-auto-filter">
+          <div class="views-exposed-form">
+            <div class="views-widget-filter-my_filter">
+              <select>
+                <option value="one">The one</option>
+                <option value="another">Yet another</option>
+                <option value="final">Final option</option>
+              </select>
+            </div>
+            <div class="views-widget-filter-another_filter">
+              <select>
+                <option value="thing">Thing</option>
+                <option value="stuff">Stuff</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+            <div class="views-submit-button">
+              <input type="submit" class="form-submit" />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="view-content">
+        <div class="views-row">
+          <a href="/some-page">Something</a>
+        </div>
+        <div class="views-row">
+          <a href="http://www.drupal.org">Drupal</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

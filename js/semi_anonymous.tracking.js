@@ -59,7 +59,10 @@
     var results = Drupal.SemiAnon.getActivities('browsing'), // Collection not needed.
         pages = [], // In order to de-dupe.
         returnTerms = {}, // Return.
-        topTerms = {}; // Top only return.
+        topTerms = {}, // Top only return.
+        key,
+        vocName,
+        tid;
 
     // Optional param.
     returnAll = returnAll || false;
@@ -68,16 +71,16 @@
     if(!Drupal.SemiAnon.FavoriteTerms) {
 
       // Walk through tracking records.
-      for (var key in results) {
+      for (key in results) {
         // Only count once.
         if (typeof pages[results[key].url] === 'undefined' && results[key].hasOwnProperty('taxonomy')) {
           // For de-duping URL hits.
           pages[results[key].url] = true;
 
           // Walk through vocabs.
-          for (var vocName in results[key].taxonomy) {
+          for (vocName in results[key].taxonomy) {
             // Walk through terms.
-            for (var tid in results[key].taxonomy[vocName]) {
+            for (tid in results[key].taxonomy[vocName]) {
               // Non-existant vocab.
               if (!returnTerms.hasOwnProperty(vocName)) {
                 returnTerms[vocName] = {};
