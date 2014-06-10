@@ -109,7 +109,7 @@
     }
   });
 
-  test('Tracking activities work', 3, function() {
+  test('Tracking activities work', 4, function() {
     var myResults = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities('browsing'));
 
     ok(
@@ -120,6 +120,11 @@
       myResults.get()[myResults.keys()[0]].url.split('?')[0].slice(-19),
       'semi_anonymous.html',
       'Recorded url is present and correct'
+    );
+    strictEqual(
+      myResults.get()[myResults.keys()[0]].taxonomy.my_types['13'],
+      'Some Tag',
+      'Taxonomy term hit record is present on first tracking activity record'
     );
 
     // Manually create another browsing record.
