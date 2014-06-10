@@ -183,7 +183,7 @@ function semi_anonymous_settings_form($form_state) {
     '#size' => 5,
     '#title' => t('Auto-filter threshold'),
     '#default_value' => variable_get('semi_anonymous_auto_filter_threshold', SEMI_ANON_THRESHOLD),
-    '#description' => t("Set the browsing history term hit count required to auto-trigger a filter. You want to be sure a user's interest is real before you change the UX."),
+    '#description' => t("Set the browsing history term hit count required to auto-trigger a filter. You want to be sure a user's interest is real before you change the UX. NOTE: Mulitple term hit counts can be euqal depending on browsing, the filter will just pick the first one."),
   );
   $form['views']['semi_anonymous_auto_filter_link_analysis'] = array(
     '#type' => 'checkbox',

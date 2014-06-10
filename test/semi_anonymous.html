@@ -18,9 +18,9 @@
   <script>
     // Mock up drupal behaviors firing.
     (function($) {
+      Drupal.behaviors.semi_anonymous_user.attach(window.document, Drupal.settings);
+      Drupal.behaviors.semi_anonymous_tracking.attach(window.document, Drupal.settings);
       $(document).ready(function() {
-        Drupal.behaviors.semi_anonymous_user.attach(window.document, Drupal.settings);
-        Drupal.behaviors.semi_anonymous_tracking.attach(window.document, Drupal.settings);
         Drupal.behaviors.semi_anonymous_link_analysis.attach(window.document, Drupal.settings);
       });
     })(jQuery);

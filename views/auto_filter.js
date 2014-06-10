@@ -17,34 +17,28 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
 (function($) {
   $(document).ready(function() {
 
-/*
-
     // Little helper for coding once.
     var triggerFilters = function triggerFilters() {
       // Set each filter.
-      $.each(Drupal.SemiAnon.getAutoFilters(), function(index, $val) {
+      $.each(Drupal.SemiAnon.getAutoFilters(), function (i, val) {
         // Avoid acting on hidden things.
-        if ($val.parents('.view').is(":visible")) {
+        if (val.filter.parents('.view').is(":visible")) {
           // Only show once visible if available.
           if (typeof $.waypoints !== 'undefined') {
-            $val.parents('.view').waypoint(function() {
-              Drupal.SemiAnon.clientSideFilter($val, index);
+            val.filter.parents('.view').waypoint(function() {
+              //Drupal.SemiAnon.clientSideFilter($val, index);
             }, { offset:'100%', triggerOnce:true });
           }
           else {
-            Drupal.SemiAnon.clientSideFilter($val, index);
+            Drupal.SemiAnon.clientSideFilter(val.filter, val.property);
           }
         }
       });
     };
 
-*/
-
     /**
      * Trigger configured auto-filters.
      */
-
-/*
 
     // Confirm existance of filter forms.
     if ($('form').hasClass('semi-anonymous-auto-filter')) {
@@ -54,12 +48,6 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
       });
     }
 
-
-*/
-
-
-
-
   });
 
   /**
@@ -68,26 +56,26 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
    */
   Drupal.behaviors.semi_anonymous_link_analysis = {
     attach: function (context, settings) {
-      var $view,
-          $content,
-          glue;
+      var $content,
+          glue,
+          pattern;
 
       // Both page load and AJAX.
       if ((context === document || (context instanceof jQuery && context.is('form'))) && settings.semi_anonymous.auto_filter_link_analysis) {
 
-        $.each(Drupal.SemiAnon.getAutoFilters(), function(index, $val) {
-          $view = $val.closest('.view:visible');
-          $content = $view.find('.view-content');
+        $.each(Drupal.SemiAnon.getAutoFilters(), function (i, val) {
+          $content = val.filter.closest('.view:visible').find('.view-content');
 
           $content.find('.views-row a, .view-content li a').each( function() {
-            // Add query params if not already present (AJAX can cause duplication).
-            if (typeof $(this).attr('href').split('filter=')[1] === 'undefined') {
+            // Add query params if not already present (other on-page AJAX can cause duplication).
+            pattern = new RegExp('^filter=' + encodeURIComponent(val.property));
+            if ($(this).attr('href').match(pattern) === null) {
                 glue = '?';
               if (typeof $(this).attr('href').split('?')[1] !== 'undefined') {
                 glue = '&';
               }
               $(this).attr('href',
-                $(this).attr('href') + glue + 'filter=' + index + '&val=' + $val.find('select option:selected').text()
+                $(this).attr('href') + glue + 'filter=' + encodeURIComponent(val.property) + '&val=' + encodeURIComponent(val.filter.find('select option:selected').text())
               );
             }
           });
@@ -99,13 +87,13 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
   };
 
   /**
-   * Helper function to find valid filters.
+   * Helper function to obtain an array of valid filters.
    *
    * @return {array}
    *   List of configured auto-filters on the page.
    */
   Drupal.SemiAnon.getAutoFilters = function() {
-    var filters = {},
+    var filters = [],
         $view,
         $filter,
         id,
@@ -128,8 +116,11 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
 
         // Inital confirmation filter exists and mapping setting isn't empty.
         if ($filter && val.data_property !== '') {
-          // @todo DO NOT list by property, this is page wide.
-          filters[val.data_property] = $filter;
+          // Add this filter to our list.
+          filters.push({
+            'filter': $filter,
+            'property': val.data_property
+          });
         }
       });
     });
@@ -148,28 +139,24 @@ Drupal.SemiAnon = Drupal.SemiAnon || {};
    *   The the user object propety to use to set the filter with.
    */
   Drupal.SemiAnon.clientSideFilter = function($filter, property) {
-    var onlyOnce = false,
-        favData = Drupal.SemiAnon.getFavoriteTerms(),
+    var favData = Drupal.SemiAnon.getFavoriteTerms(),
         matches = property.match(/^taxonomy:(.+)/), // Look for taxonomy indicator.
         vocab = matches && matches[1], // When truthy grab the value.
-        userValue,
-        tid;
+        userValue = false,
+        favVocabData;
 
     // Check for taxonomy vocab indicator.
     if (matches) {
-      // Honor filter trigger threshold.
-      if (favData.hasOwnProperty(vocab) && (favData.vocab.count >= Drupal.settings.semi_anonymous.auto_filter_threshold)) {
+      if (favData.hasOwnProperty(vocab)) {
         // Handle mulitple terms due to event count.
-        // Pop the first poperty of the object.
-        // @todo Try using .pop() instead.
-        for (tid in favData.vocab) {
-          if (!onlyOnce) {
-            userValue = favData.property;
-            onlyOnce = true;
-          }
-          else {
-            break; 
-          }
+        favVocabData = new Drupal.SemiAnon.Collection(favData[vocab]);
+        // Honor filter trigger threshold.
+        if(favData[vocab][favVocabData.keys()[0]].count >= Drupal.settings.semi_anonymous.auto_filter_threshold) {
+          userValue = favData.property;
+        }
+        else {
+          // Exit if under threshold.
+          return;
         }
       }
     }

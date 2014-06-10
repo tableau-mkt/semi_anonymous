@@ -66,20 +66,25 @@
 
   module('Semi Anonymous: User basics');
 
-  test('User origins', 2, function() {
+  test('User origins', 3, function() {
     var origin = $.jStorage.get('user.origin'),
         session_origin = $.jStorage.get('user.session_origin');
 
     // @todo Could perform param slice first or parse the URL for real.
     strictEqual(
-      JSON.parse(origin).url.slice(-19),
+      JSON.parse(origin).url.split('?')[0].slice(-19),
       'semi_anonymous.html',
       'Origin should be test file.'
     );
     strictEqual(
-      JSON.parse(session_origin).url.slice(-19),
+      JSON.parse(session_origin).url.split('?')[0].slice(-19),
       'semi_anonymous.html',
       'Session origin should be test file.'
+    );
+    strictEqual(
+      typeof Drupal.settings.semi_anonymous.userDeferred.resolve,
+      'function',
+      'UserDeferred is a deferred object'
     );
   });
 
@@ -112,7 +117,7 @@
       'Page load activity recorded'
     );
     strictEqual(
-      myResults.get()[myResults.keys().pop()].url.slice(-19),
+      myResults.get()[myResults.keys()[0]].url.split('?')[0].slice(-19),
       'semi_anonymous.html',
       'Recorded url is present and correct'
     );
@@ -125,7 +130,22 @@
       myResults.size() === 2,
       'Second activity recorded'
     );
+  });
 
+  test('Favorites available', 2, function () {
+    var favData = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getFavoriteTerms()),
+        termFavData = new Drupal.SemiAnon.Collection(favData.get()[favData.keys()[0]]),
+        favTestList = [ "my_types", "special_category" ];
+
+    deepEqual(
+      favData.keys(),
+      favTestList,
+      'Vocabs listed within favorites'
+    );
+    ok(
+      typeof termFavData.get()[termFavData.keys()[0]].count === 'number',
+      'Count present on at least first favorite term'
+    );
   });
 
 
@@ -145,22 +165,22 @@
       'View display returned correctly'
     );
     ok(
-      Drupal.SemiAnon.getAutoFilters().special_category instanceof $,
+      Drupal.SemiAnon.getAutoFilters()[0].filter instanceof $,
       'Filter list contains at least one jQuery DOM object'
     );
   });
 
-  test('List analysis', 2, function() {
+  test('Link analysis', 2, function() {
     var query = $('#block-views-my-view-block-1').find('.view-content a').first().attr('href').split('?')[1];
 
     ok(
-       query.split('&')[0] === 'filter=special_category',
+       query.split('&')[0] === 'filter=taxonomy%3Aspecial_category',
       'Analysis filter param added to at least first link'
-    )
+    );
     ok(
-      query.split('&')[1] === 'val=The one',
+      query.split('&')[1] === 'val=The%20one',
       'Analysis value param added to at least first link'
-    )
+    );
   });
 
 }(jQuery));
