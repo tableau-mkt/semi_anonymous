@@ -28,9 +28,9 @@
   });
 
 
-  module('Semi Anonymous: Basics');
+  module('Basics');
 
-  test('Init tests', 5, function () {
+  test('Init', 5, function () {
     ok($.jStorage.storageAvailable(), 'Storage object exists');
     ok((typeof $.jStorage === "object"), 'Storage object is an object');
     ok((typeof $.jStorage.index()), 'Index is available');
@@ -38,7 +38,7 @@
     ok((typeof Drupal.SemiAnon === "object"), 'Namespace object is an object');
   });
 
-  test('Collection class works', 3, function () {
+  test('Collection class', 3, function () {
     var testObj = {
       'thing': 'blah',
       'another': 5,
@@ -64,9 +64,9 @@
   });
 
 
-  module('Semi Anonymous: User basics');
+  module('User');
 
-  test('User origins', 3, function() {
+  test('Origins', 3, function() {
     var origin = $.jStorage.get('user.origin'),
         session_origin = $.jStorage.get('user.session_origin');
 
@@ -89,9 +89,9 @@
   });
 
 
-  module('Semi Anonymous: Tracking');
+  module('Tracking');
 
-  test('Tracking scafolding present', function() {
+  test('Tracking scafolding', function() {
     var functions = [
       'getFavoriteTerms',
       'getActivities',
@@ -109,7 +109,7 @@
     }
   });
 
-  test('Tracking activities work', 4, function() {
+  test('Tracking activities', 4, function() {
     var myResults = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities('browsing'));
 
     ok(
@@ -137,7 +137,7 @@
     );
   });
 
-  test('Favorites available', 2, function () {
+  test('Favorites', 2, function () {
     var favData = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getFavoriteTerms()),
         termFavData = new Drupal.SemiAnon.Collection(favData.get()[favData.keys()[0]]),
         favTestList = [ "my_types", "special_category" ];
