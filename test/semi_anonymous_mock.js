@@ -10,7 +10,7 @@ window.Drupal = {
       "track_term_hits": true,
       "userDeferred": false
     },
-    "semi_anonymous_meta": {
+    "dataLayer": {
       "nid": "123",
       "title": "My Cool Page",
       "entityType": "node",

@@ -13,7 +13,7 @@ function semi_anonymous_settings_form($form_state) {
     $v_options[$v->machine_name] = $v->name;
   }
   // Get available meta data.
-  $meta_data = _semi_anonymous_collect_meta();
+  $meta_data = _datalayer_collect_meta();
 
   $form['global'] = array(
     '#type' => 'fieldset',
@@ -79,14 +79,6 @@ function semi_anonymous_settings_form($form_state) {
     '#description' => t('Size of tracking history.'),
   );
   /*
-  // @todo Merge other client-side user objects and stash them to avoid constant re-generation.
-  $form['user']['semi_anonymous_merge_user_data'] = array(
-    '#type' => 'textarea',
-    '#cols' => 70,
-    '#title' => t('Merge user objects'),
-    '#default_value' => (variable_get('semi_anonymous_merge_user_data', FALSE)) ? drupal_implode_tags(variable_get('semi_anonymous_reference_user_data', '')) : '',
-    '#description' => t('Merge in other client-side user objects into this standardized namespace. Examples: myAnalytics.user, myThirdPartyUserObject'),
-  );
   // @todo: Save and restore user data for past authenticated user sessions.
   $form['user']['semi_anonymous_user_save'] = array(
     '#type' => 'checkbox',
@@ -103,29 +95,12 @@ function semi_anonymous_settings_form($form_state) {
     '#collapsed' => FALSE,
     '#weight' => 5,
   );
-  $form['content']['semi_anonymous_add_page_meta'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Add entity meta data'),
-    '#default_value' => variable_get('semi_anonymous_add_page_meta', FALSE),
-    '#description' => t('Make entity meta data available for client-side reaction.'),
-  );
   $form['content']['track_meta'] = array(
     '#type' => 'fieldset',
     '#title' => t('Tracking Meta Data'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#description' => t('The meta data details to store when tracking browsing history. Marking none will track all.'),
-  );
-  $form['content']['semi_anonymous_output_terms'] = array(
-    '#type' => 'checkbox',
-    '#states' => array(
-      'enabled' => array(
-        ':input[name="semi_anonymous_add_page_meta"]' => array('checked' => TRUE),
-      ),
-    ),
-    '#title' => t('Add taxonomy terms'),
-    '#default_value' => variable_get('semi_anonymous_output_terms', FALSE),
-    '#description' => t('Make taxonomy term data available for client-side use.'),
+    '#description' => t('Which meta data details to store when tracking browsing history. Marking none will track all.'),
   );
   $form['content']['track_meta']['semi_anonymous_track_meta'] = array(
     '#type' => 'checkboxes',
@@ -134,7 +109,7 @@ function semi_anonymous_settings_form($form_state) {
         ':input[name="semi_add_page_meta"]' => array('checked' => TRUE),
       ),
     ),
-    '#title' => t('Meta data items'),
+    '#title' => '',
     '#default_value' => variable_get('semi_anonymous_track_meta', 0),
     '#options' => drupal_map_assoc($meta_data),
   );
@@ -162,7 +137,7 @@ function semi_anonymous_settings_form($form_state) {
         ':input[name="semi_anonymous_track_term_hits"]' => array('checked' => TRUE),
       ),
     ),
-    '#title' => t('Vocabulary'),
+    '#title' => '',
     '#default_value' => variable_get('semi_anonymous_track_term_vocabs', 0),
     '#options' => $v_options,
     '#description' => t('The vocabularies which should be output as meta data and tracked when recording "hits" to terms on content.'),

@@ -13,18 +13,22 @@ Profile anonymous users.
 * __[Advanced use](#advanced-use)__
 
 ## Getting started
-This Drupal module does several things, which may independently solve your need. It provides in-browser localStorage space, outputs Drupal page meta data, stores a user "origins," and handles stashing of client-side activity data.
+This Drupal module does several things, which may independently solve your need. It provides in-browser localStorage space, stores a user "origins," and handles stashing of client-side activity data, uses the output of Drupal page meta data.
 
 ### Issues
 Please post any problems or feature requests to the [Drupal project issue queue](https://drupal.org/project/issues/semi_anonymous).
 
 ### Dependencies
-Both have a Drupal project if you prefer to register your libraries. Do one of the following for each.
+First is the Drupal module which exposes the data we need for trakcing. The other two are JavaScript, both of which have a Drupal project if you prefer to register your libraries. Follow *one* of the instructions for those.
 
-1. [jStorage](http://jstorage.info) localStorage abstraction library.
+1. [Data Layer](https://drupal.org/project/datalayer) client-side data output for Drupal.
+ * Place in `sites/all/modules/datalayer`
+ * Enable via modules UI or Drush.
+ * Configure meta data output via admin: `/admin/config/search/datalayer`
+2. [jStorage](http://jstorage.info) localStorage abstraction library.
  * Place in `sites/all/libraries/jstorage/jstorage.min.js`
  * Or use the [Drupal project](https://drupal.org/project/jstorage_lib).
-2. [JSON2](https://github.com/douglascrockford/JSON-js) better JSON methods
+3. [JSON2](https://github.com/douglascrockford/JSON-js) better JSON methods
  * Place in `sites/all/libraries/json2/json2.js`
  * Or use the [Drupal project](https://drupal.org/project/json2).
 
@@ -101,42 +105,8 @@ order irrelevant which is good for robustness. _This is the only example that in
 ```
 
 ### Meta Data Output
-In order to do fun and fancy things on the client-side it's nice to have easy access to the meta data
-about the pages of your site. This modules helps output that info. You could get some of this from the
-DOM, but it's good to be sure. _You could use this feature and skip all other localStorage features._
-You can configure what gets pushed out as well as add and alter what's available via a custom module
-by implementing the `hook_semi_anonymous_output_properties()` and/or `hook_semi_anonymous_meta_alter()` functions.
-Here's _some_ of what's available by default...
-```json
-{
-  "nid" : "123",
-  "title" : "My Cool Page",
-  "entityType" : "node",
-  "bundle" : "article",
-  "uid" : "555",
-  "language" : "en",
-  "taxonomy" : {
-    "special_category" : {
-      "25" : "Term Name",
-      "26" : "Another Term"
-    },
-    "my_types" : {
-      "13" : "Some Tag",
-      "14" : "Another Tag"
-    }
-  }
-}
-```
-Grab a hold of those available goodies.
-```javascript
-var pageAuthorUID = Drupal.settings.semi_anonymous_meta.uid,
-    pageTitle = Drupal.settings.semi_anonymous_meta.title,
-    pageLanguage = Drupal.settings.semi_anonymous_meta.language;
-
-if (typeof Drupal.settings.semi_anonymous_meta.taxonomy.my_category !== 'undefined') {
-  var pageHasSomeTerm = Drupal.settings.semi_anonymous_meta.taxonomy.my_category.hasOwnProperty('25');
-}
-```
+In order to do fun and fancy things on the client-side you need easy access to the meta data
+about the pages of your site. See the [DataLayer GitHub page](https://github.com/tableau-mkt/datalayer) for docs.
 
 ## Activity Tracking
 A user's browsing history is stored per page view. This is an example record, which includes data from taxonomy term hit tracking being enabled...

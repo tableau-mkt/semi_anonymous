@@ -10,7 +10,7 @@
 function semi_anonymous_help($path, $arg) {
   switch ($path) {
     case 'admin/help#semi_anonymous':
-      return t("Provide standardized space, adds page meta data, and will handle stashing for client-side tracking and reactions to user behavior. This module is particularly intended for folks who use Varnish caching and have very little server-side interaction for anonymous users.");
+      return t("Provide standardized space, and will handle stashing for client-side tracking and reactions to user behavior. This module is particularly intended for folks who use Varnish caching and have very little server-side interaction for anonymous users.");
   }
 }
 
@@ -41,68 +41,6 @@ function semi_anonymous_preprocess_html(&$variables) {
   $ouput_data = array();
   $m = 'semi_anonymous_';
 
-  // Add details about the page.
-  if (variable_get($m . 'add_page_meta', FALSE) || variable_get($m . 'track_term_hits', FALSE)) {
-    $type = false;
-    if ($obj = _semi_anonymous_menu_get_any_object($type)) {
-      // Drop page meta data onto output object.
-      if(variable_get($m . 'add_page_meta', FALSE) && $type) {
-        // Explicit additions.
-        // Add new items to the array in _semi_anonymous_collect_meta().
-        $ouput_data['entityType'] = $type;
-        $ouput_data['bundle'] = (isset($obj->type)) ? $obj->type : false;
-
-        // Output various entity properties. Allow additions/alterations.
-        // NOTE: Properties mean different things on different entity types.
-        $properties = _semi_anonymous_collect_meta();
-        $selected_properties = variable_get('semi_anonymous_track_meta');
-
-        foreach ($properties as $p) {
-          // Include all in output, only entity valid.
-          if (isset($obj->$p)) {
-            $ouput_data[$p] = $obj->$p;
-          }
-        }
-
-        // If tracking meta data is specifically selected.
-        if (count($selected_properties) > 0) {
-          $tracking = array();
-          foreach ($ouput_data as $prop => $value) {
-            if ($selected_properties[$prop] !== 0) {
-              $tracking[] = $prop;
-            }
-          }
-          drupal_add_js(array('semi_anonymous_tracking' => $tracking), 'setting');
-        }
-      }
-
-      // Output term tracking.
-      // Tell the client-side which tags are present on this entity.
-      if (variable_get($m . 'track_page', FALSE)) {
-        // Meta data while on a term page.
-        if ($type == 'taxonomy_term') {
-          $ouput_data['taxonomy'] = array($obj->vocabulary_machine_name => $obj->tid);
-        }
-        else {
-          // Meta data on content.
-          if ($terms = _semi_anonymous_get_entity_terms($type, $obj->type, $obj)) {
-            $ouput_data['taxonomy'] = $terms;
-          }
-        }
-      }
-
-      // Allow for term tracking.
-      if (variable_get($m . 'track_term_hits', FALSE)) {
-        drupal_add_js(array('semi_anonymous' => array('track_term_hits' => true)), 'setting');
-        drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
-      }
-    }
-  }
-  // Output page meta data.
-  if (!empty($ouput_data)) {
-    drupal_add_js(array('semi_anonymous_meta' => $ouput_data), 'setting');
-  }
-
   // Add basic assets.
   if (variable_get($m . 'include', TRUE)) {
     // JSON2.
@@ -127,149 +65,26 @@ function semi_anonymous_preprocess_html(&$variables) {
     }
   }
 
-  // Add tracking setting(s) and asset.
-  if (variable_get($m . 'track_browsing', FALSE)) {
+  // Allow for tracking.
+  if (module_exists('datalayer') && (variable_get($m . 'track_browsing', FALSE))) {
+    // Switch on term tracking.
+    if (variable_get($m . 'track_term_hits', FALSE)) {
+      drupal_add_js(array('semi_anonymous' => array('track_term_hits' => true)), 'setting');
+    }
+    // Configs.
     drupal_add_js(
       array('semi_anonymous' => array(
-        'track_browsing' => true,
-        'track_browsing_extent' => variable_get('semi_anonymous_track_browsing_extent', 'false'),
+        'track_browsing_extent' => variable_get('semi_anonymous_track_browsing_extent', 25),
       )),
       'setting'
     );
+    // Assets.
     drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
   }
 
-  // Add user origin asset.
+  // Add user origin assets.
   if (variable_get($m . 'store_user_origins', TRUE)) {
     drupal_add_js(array('semi_anonymous' => array('userDeferred' => false)), 'setting');
     drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.users.js');
   }
-}
-
-
-/**
- * Collects up meta data for output.
- */
-function _semi_anonymous_collect_meta() {
-  // Avoid duplicate builds.
-  $properties = &drupal_static(__FUNCTION__);
-  if (!isset($properties)) {
-    $properties = array('entityType', 'bundle');
-    foreach (module_implements('semi_anonymous_meta') as $module) {
-      // Call modules implementing semi_anonymous_meta() and combine results.
-      $properties = array_merge($properties,
-        module_invoke($module, 'semi_anonymous_meta')
-      );
-    }
-    drupal_alter('semi_anonymous_meta', $properties);
-  }
-
-  return $properties;
-}
-
-
-/**
- * Implements hook_semi_anonymous_meta().
- * Defines default meta data.
- */
-function semi_anonymous_semi_anonymous_meta() {
-  return array(
-    'title',
-    'language',
-    'nid',
-    'tnid',
-    'tid',
-    'vid',
-    'name',
-    'uid',
-    'created',
-    'status',
-  );
-}
-
-
-/**
- * Utility function to agnosticly get the current menu object.
- * Structured like menu_get_object(), but the passed type will be set for you.
- *
- * @param string (reference) $return_type
- *
- * return object
- *   Entity object of current menu callback page.
- */
-function _semi_anonymous_menu_get_any_object(&$return_type) {
-  // Figure out how this entity is loaded.
-  $type = FALSE;
-  $item = menu_get_item();
-  $vals = array_values($item['load_functions']);
-  $load_function = $vals[0];
-  $arg_position = array_search($load_function, $item['load_functions']);
-
-  // Compare to entity types.
-  $entity_info = entity_get_info();
-  foreach($entity_info as $i => $e) {
-    if ($e['load hook'] == $load_function) {
-      $type = $i;
-    }
-  }
-
-  // Many happy returns.
-  if ($type && $obj = menu_get_object($type, $arg_position)) {
-    if(is_object($obj)) {
-      $return_type = $type;
-      return $obj;
-    }
-    else {
-      return FALSE;
-    }
-  }
-  else {
-    return FALSE;
-  }
-}
-
-
-/**
- * Fetch all taxonomy terms from an entity.
- * All fields of field type "taxonomy_term_reference" will be included.
- *
- * Idea found at https://api.drupal.org/comment/50393#comment-50393
- * Thanks to HydroZ.
- *
- * @param String $entity_type
- * @param $string $bundle
- * @param Object $entity
- *
- * @return array
- *   Array with tids of entity.
- */
-function _semi_anonymous_get_entity_terms($entity_type, $bundle, $entity) {
-  $terms = array();
-  $vocabs = variable_get('semi_anonymous_track_term_vocabs', array());
-
-  // Use very lightweight field info list to find relevant fields.
-  foreach (field_info_field_map() as $field_name => $field_info) {
-    if ($field_info['type'] <> "taxonomy_term_reference") {
-      continue;
-    }
-    if (array_key_exists($entity_type, $field_info['bundles'])) {
-      if (in_array($bundle, $field_info['bundles'][$entity_type])) {
-        if (isset($entity->{$field_name})) {
-          // Collect terms from fields for return.
-          $values = field_get_items($entity_type, $entity, $field_name);
-          foreach ((array)$values as $termArray) {
-            // Limit to existant tids.
-            if (isset($termArray['tid']) && $term = taxonomy_term_load($termArray['tid'])) {
-              // Limit configured vocabs.
-              if ($vocabs[$term->vocabulary_machine_name]) {
-                $terms[$term->vocabulary_machine_name][$term->tid] = $term->name;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return $terms;
 }

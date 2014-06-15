@@ -23,21 +23,21 @@
         if (settings.semi_anonymous_tracking) {
           $.each(settings.semi_anonymous_tracking, function (i, val) {
             // Add each item.
-            if (typeof settings.semi_anonymous_meta[val] !== undefined) {
-              trackVal[val] = settings.semi_anonymous_meta[val];
+            if (typeof settings.dataLayer[val] !== undefined) {
+              trackVal[val] = settings.dataLayer[val];
             }
           });
         }
         else {
           // Log all meta data.
-          trackVal = settings.semi_anonymous_meta;
+          trackVal = settings.dataLayer;
         }
         // Add the URL.
         trackVal.url = window.location.href;
 
         // Log term hits.
         if (settings.semi_anonymous.track_term_hits) {
-          trackVal.taxonomy = settings.semi_anonymous_meta.taxonomy;
+          trackVal.taxonomy = settings.dataLayer.taxonomy;
         }
 
         // Stash it.
