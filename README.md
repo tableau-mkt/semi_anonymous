@@ -12,7 +12,7 @@ Profile anonymous users.
  * Stash and retrieve your own activities with ease!
 * __[Advanced use](#advanced-use)__
 
-## Getting started
+## Getting Started
 This Drupal module does several things, which may independently solve your need. It provides in-browser localStorage space, stores a user "origins," and handles stashing of client-side activity data, uses the output of Drupal page meta data.
 
 ### Issues
@@ -82,9 +82,9 @@ order irrelevant which is good for robustness. _This is the only example that in
       if (context === document) {
 
         // Ensure data availability.
-        settings.semi_anonymous.userDeferred = settings.semi_anonymous.userDeferred || $.Deferred();
+        semiAnon.userDeferred = semiAnon.userDeferred || $.Deferred();
 
-        settings.semi_anonymous.userDeferred.done(function () {
+        semiAnon.userDeferred.done(function () {
           // Act on a user property.
           var origin = JSON.parse($.jStorage.get('user.origin'));
           doSomethingNeato(origin.url);
@@ -128,7 +128,7 @@ A user's browsing history is stored per page view. This is an example record, wh
 ```
 Grab a hold of browsing history and work with it like this...
 ```javascript
-$.each(Drupal.SemiAnon.getActivities('browsing'), function (key, record) {
+$.each(semiAnon.getActivities('browsing'), function (key, record) {
   someComparison(record.url);
 });
 ```
@@ -157,7 +157,7 @@ if the hit count is the same._ For clarity here's what you get...
 ```
 You might use that data with some kind of on-page AJAX reaction...
 ```javascript
-var favTerms = Drupal.SemiAnon.getFavoriteTerms(),
+var favTerms = semiAnon.getFavoriteTerms(),
     onlyOnce = false;
 
 // Ensure a favorite exists for desired vocab.
@@ -174,7 +174,7 @@ if (typeof favTerms.my_category != 'undefined') {
 ```
 If you want to see ALL terms from pages seen by the user, with a hit count, just pass `true` as a function arg.
 ```javascript
-var allSeenTerms = Drupal.SemiAnon.getFavoriteTerms(true);
+var allSeenTerms = semiAnon.getFavoriteTerms(true);
 ```
 Results will be extended compared to the above, like this...
 ```json
@@ -209,7 +209,7 @@ You can register your own tracking activities like this...
 $('.my-special-links').bind('click', function (e) {
   myObj.linkText = $(this).text()
   myObj.myProperty = $(this).attr('data-property');
-  Drupal.SemiAnon.createActivity('my_activity', myObj);
+  semiAnon.createActivity('my_activity', myObj);
 });
 ```
 
@@ -230,7 +230,7 @@ They will be stored and come back like this; filtered down to the group specifie
 ## Advanced Use
 Because records are returned as an object, you can directly access them once retrieved. Example...
 ```javascript
-var myActivities = Drupal.SemiAnon.getActivities('my_activity');
+var myActivities = semiAnon.getActivities('my_activity');
 
 // Iterate and do something neat.
 $.each(myActivities, function (key, record) {
@@ -241,15 +241,15 @@ However, because they're objects simple operations can be annoying to work with,
 a library like [Underscore](http://underscorejs.org) or [Lo-Dash](http://lodash.com). To avoid any more
 dependencies the following class and methods were necessary and are available...
 ```javascript
-var myResults = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities('my_activity')),
+var myResults = new semiAnon.Collection(semiAnon.getActivities('my_activity')),
     // Use the keys from this group.
     resultsKeys = myResults.keys(),
     // Use the tracking objects in this group, the same as directly calling the
-    // Drupal.SemiAnon.getActivities('my_activity') function.
+    // semiAnon.getActivities('my_activity') function.
     resultsObjects = myResults.get();
 
 // Use the number of activities to output almost the same thing you'd get from iterating
-// over the Drupal.SemiAnon.getActivities('my_activity') function.
+// over the semiAnon.getActivities('my_activity') function.
 for (var int = 0; i >= myResults.size(); i++) {
   console.log(resultsObjects[resultsKeys[i]]);
 }
