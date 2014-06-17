@@ -67,24 +67,30 @@ function semi_anonymous_preprocess_html(&$variables) {
 
   // Allow for tracking.
   if (module_exists('datalayer') && (variable_get($m . 'track_browsing', FALSE))) {
-    // Switch on term tracking.
-    if (variable_get($m . 'track_term_hits', FALSE)) {
-      drupal_add_js(array('semi_anonymous' => array('track_term_hits' => true)), 'setting');
-    }
-    // Configs.
-    drupal_add_js(
-      array('semi_anonymous' => array(
-        'track_browsing_extent' => variable_get('semi_anonymous_track_browsing_extent', 25),
-      )),
-      'setting'
+
+    // Output library settings.
+    $settings = array(
+      'tracking' => true,
+      'track_term_hits' => variable_get($m . 'track_term_hits', FALSE),
+      'track_browsing_extent' => variable_get($m . 'track_browsing_extent', 25),
     );
-    // Assets.
+    $output = !empty($settings) ? drupal_json_encode($settings) : '';
+    $render = array(
+      '#type' => 'html_tag',
+      '#tag' => 'script',
+      '#value' => 'semiAnon = [' . $output . '];',
+      '#attributes' => array(
+        'type' => 'text/javascript',
+      ),
+    );
+    drupal_add_html_head($render, 'datalayer_meta');
+
+    // Add tracking library.
     drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
   }
 
-  // Add user origin assets.
+  // Add user origin library.
   if (variable_get($m . 'store_user_origins', TRUE)) {
-    drupal_add_js(array('semi_anonymous' => array('userDeferred' => false)), 'setting');
     drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.users.js');
   }
 }

@@ -38,9 +38,8 @@
   });
 
   test('Namespaces created', function () {
-    expect(2);
-    ok(Drupal.SemiAnon, 'Main namespace exists');
-    ok((typeof Drupal.SemiAnon === "object"), 'Namespace object is an object');
+    expect(1);
+    ok((typeof semiAnon === "object"), 'Namespace object is an object');
   });
 
   test('Collection class works', function () {
@@ -51,7 +50,7 @@
       'final': 'yup'
     },
     testAry = ['thing', 'another', 'final'],
-    stuff = new Drupal.SemiAnon.Collection(testObj);
+    stuff = new semiAnon.Collection(testObj);
 
     ok(stuff.size() === 3, 'Collection size function reports correctly');
     deepEqual(stuff.keys(), testAry.sort(), 'Collection keys function reports correctly');
@@ -66,8 +65,8 @@
     var origin = $.jStorage.get('user.origin'),
         session_origin = $.jStorage.get('user.session_origin');
 
-    strictEqual(JSON.parse(origin).url.slice(-19), 'semi_anonymous.html', 'Origin should be test file.');
-    strictEqual(JSON.parse(session_origin).url.slice(-19), 'semi_anonymous.html', 'Session origin should be test file.');
+    strictEqual(JSON.parse(origin).url.split('?')[0].slice(-19), 'semi_anonymous.html', 'Origin should be test file.');
+    strictEqual(JSON.parse(session_origin).url.split('?')[0].slice(-19), 'semi_anonymous.html', 'Session origin should be test file.');
   });
 
 
@@ -83,7 +82,7 @@
     expect(functions.length);
 
     for (var f in functions) {
-      strictEqual(typeof Drupal.SemiAnon[functions[f]], 'function', 'Function exists: ' + functions[f]);
+      strictEqual(typeof semiAnon[functions[f]], 'function', 'Function exists: ' + functions[f]);
     }
   });
 

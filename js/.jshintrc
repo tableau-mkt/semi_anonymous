@@ -12,7 +12,7 @@
   "browser": true,
   "predef": ["jQuery"],
   "globals": {
-    "Drupal": true,
+    "semiAnon": true,
     "dataLayer": true,
     "console": true
   }

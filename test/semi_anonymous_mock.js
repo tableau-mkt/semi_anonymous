@@ -22,12 +22,8 @@ window.dataLayer = [{
   }
 }];
 
-window.Drupal = {
-  "behaviors": {},
-  "settings": {
-    "semi_anonymous": {
-      "track_term_hits": true,
-      "userDeferred": false
-    }
-  }
+window.semiAnon = {
+  "tracking": true,
+  "track_term_hits": true,
+  "track_browsing_extent": 25
 };

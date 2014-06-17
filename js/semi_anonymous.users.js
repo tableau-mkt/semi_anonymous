@@ -1,42 +1,36 @@
 /**
  * @file
- * Global user related activity.
+ * User related activity.
  */
 
 (function ($) {
 
-  // Act on the page load.
-  Drupal.behaviors.semi_anonymous_user = {
-    attach: function (context) {
-      if (context === document) {
+  // Namespace.
+  window.semiAnon = window.semiAnon || {};
+  // Data availability.
+  semiAnon.userDeferred = semiAnon.userDeferred || $.Deferred();
 
-        // Init.
-        var n = new Date().getTime(),
-            hit = {};
+  $(document).ready(function(){
 
-        // Data availability.
-        Drupal.settings.semi_anonymous.userDeferred = Drupal.settings.semi_anonymous.userDeferred || $.Deferred();
+    var n = new Date().getTime(),
+        hit = {
+          'timestamp': n,
+          'url': window.location.href
+        };
 
-        // Stash the session entry point.
-        if (!$.jStorage.get('user.session_origin') || !document.referrer) {
-          hit.timestamp = n;
-          hit.url = window.location.href;
-          $.jStorage.set('user.session_origin', JSON.stringify(hit));
-        }
-
-        // Stash the deep origin.
-        if (!$.jStorage.get('user.origin')) {
-          hit.timestamp = n;
-          hit.url = window.location.href;
-          hit.referrer = document.referrer;
-          $.jStorage.set('user.origin', JSON.stringify(hit));
-        }
-
-        // Reliable availability.
-        Drupal.settings.semi_anonymous.userDeferred.resolve();
-
-      }
+    // Stash the session entry point.
+    if (!$.jStorage.get('user.session_origin') || !document.referrer) {
+      $.jStorage.set('user.session_origin', JSON.stringify(hit));
     }
-  };
 
+    // Stash the deep origin.
+    if (!$.jStorage.get('user.origin')) {
+      hit.referrer = document.referrer;
+      $.jStorage.set('user.origin', JSON.stringify(hit));
+    }
+
+    // Reliable availability.
+    semiAnon.userDeferred.resolve();
+
+  });
 })(jQuery);

@@ -6,46 +6,40 @@
 // Functions in need of a little jQuery.
 (function ($) {
 
-  // Namespace for functions.
-  Drupal.SemiAnon = Drupal.SemiAnon || {};
+  // Namespace.
+  window.semiAnon = window.semiAnon || {};
   // Make favorites "static".
-  Drupal.SemiAnon.FavoriteTerms = false;
+  semiAnon.FavoriteTerms = false;
 
-  // Act on the page load.
-  Drupal.behaviors.semi_anonymous_tracking = {
-    attach: function (context, settings) {
-      if (context === document) {
+  $(document).ready(function(){
 
-        // Init.
-        var trackVal = {};
+    var trackVals = {
+      'url': window.location.href
+    };
 
-        // Log only configured items.
-        if (settings.semi_anonymous_tracking) {
-          $.each(settings.semi_anonymous_tracking, function (i, val) {
-            // Add each item.
-            if (typeof dataLayer[val] !== undefined) {
-              trackVal[val] = dataLayer[val];
-            }
-          });
+    // Log only configured items.
+    if (semiAnon.tracking) {
+      $.each(semiAnon.tracking, function (i, val) {
+        // Add each item.
+        if (typeof dataLayer[val] !== undefined) {
+          trackVals[val] = dataLayer[val];
         }
-        else {
-          // Log all meta data.
-          trackVal = dataLayer;
-        }
-        // Add the URL.
-        trackVal.url = window.location.href;
-
-        // Log term hits.
-        if (settings.semi_anonymous.track_term_hits) {
-          trackVal.taxonomy = dataLayer.taxonomy;
-        }
-
-        // Stash it.
-        Drupal.SemiAnon.createActivity('browsing', JSON.stringify(trackVal));
-
-      }
+      });
     }
-  };
+    else {
+      // Log all meta data.
+      trackVals = dataLayer;
+    }
+
+    // Log term hits.
+    if (semiAnon.track_term_hits) {
+      trackVals.taxonomy = dataLayer.taxonomy;
+    }
+
+    // Stash it.
+    semiAnon.createActivity('browsing', JSON.stringify(trackVals));
+
+  });
 
 
   /**
@@ -56,8 +50,8 @@
    * return {object}
    *   List of vocabs with top taxonomy term and count.
    */
-  Drupal.SemiAnon.getFavoriteTerms = function (returnAll) {
-    var results = Drupal.SemiAnon.getActivities('browsing'), // Collection not needed.
+  semiAnon.getFavoriteTerms = function (returnAll) {
+    var results = semiAnon.getActivities('browsing'), // Collection not needed.
         pages = [], // In order to de-dupe.
         returnTerms = {}, // Return.
         topTerms = {}; // Top only return.
@@ -66,7 +60,7 @@
     returnAll = returnAll || false;
 
     // Only build it once.
-    if(!Drupal.SemiAnon.FavoriteTerms) {
+    if(!semiAnon.FavoriteTerms) {
 
       // Walk through tracking records.
       for (var key in results) {
@@ -123,15 +117,15 @@
           }
         }
 
-        Drupal.SemiAnon.FavoriteTerms = topTerms;
+        semiAnon.FavoriteTerms = topTerms;
       }
       else {
-        Drupal.SemiAnon.FavoriteTerms = returnTerms;
+        semiAnon.FavoriteTerms = returnTerms;
       }
 
     }
 
-    return Drupal.SemiAnon.FavoriteTerms;
+    return semiAnon.FavoriteTerms;
   };
 
 
@@ -144,7 +138,7 @@
    * return {object}
    *   Key/value list of tracking localStorage entries.
    */
-  Drupal.SemiAnon.getActivities = function (group) {
+  semiAnon.getActivities = function (group) {
     var results = $.jStorage.index(),
         returnVals = {},
         i = 0;
@@ -177,8 +171,8 @@
    * @param {string} data
    *   Blob of data to store. Recommended as JSON.stringify(myDataObject).
    */
-  Drupal.SemiAnon.createActivity = function (group, data) {
-    var results = new Drupal.SemiAnon.Collection(Drupal.SemiAnon.getActivities(group)),
+  semiAnon.createActivity = function (group, data) {
+    var results = new semiAnon.Collection(semiAnon.getActivities(group)),
         keys = results.keys(),
         n = new Date().getTime(),
         diff = 0;
@@ -187,8 +181,8 @@
     $.jStorage.set('track.' + group + '.' + n, data);
 
     // Ensure space limit is maintained.
-    if (results.size() > Drupal.settings.semi_anonymous.track_browsing_extent) {
-      diff = results.size() - Drupal.settings.semi_anonymous.track_browsing_extent;
+    if (results.size() > semiAnon.track_browsing_extent) {
+      diff = results.size() - semiAnon.track_browsing_extent;
 
       // Kill off oldest extra tracking activities.
       for (var i=0; i<=diff; i++) $.jStorage.deleteKey(keys[i]);
@@ -208,7 +202,7 @@
    * param {object}
    *   Set of records to gain methods on.
    */
-  Drupal.SemiAnon.Collection = function (obj) {
+  semiAnon.Collection = function (obj) {
     // Private vars.
     var keyList = null,
         length = null;

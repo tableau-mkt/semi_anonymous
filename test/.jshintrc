@@ -30,9 +30,9 @@
     "throws"
   ],
   "globals": {
-    "Drupal": true,
+    "semiAnon": true,
     "dataLayer": true,
     "console": true,
-    "Drupal.SemiAnon.Collection": true
+    "semiAnon.Collection": true
   }
 }
