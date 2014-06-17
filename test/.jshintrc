@@ -31,6 +31,7 @@
   ],
   "globals": {
     "Drupal": true,
+    "dataLayer": true,
     "console": true,
     "Drupal.SemiAnon.Collection": true
   }

@@ -13,6 +13,7 @@
   "predef": ["jQuery"],
   "globals": {
     "Drupal": true,
+    "dataLayer": true,
     "console": true
   }
 }

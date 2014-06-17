@@ -23,21 +23,21 @@
         if (settings.semi_anonymous_tracking) {
           $.each(settings.semi_anonymous_tracking, function (i, val) {
             // Add each item.
-            if (typeof settings.dataLayer[val] !== undefined) {
-              trackVal[val] = settings.dataLayer[val];
+            if (typeof dataLayer[val] !== undefined) {
+              trackVal[val] = dataLayer[val];
             }
           });
         }
         else {
           // Log all meta data.
-          trackVal = settings.dataLayer;
+          trackVal = dataLayer;
         }
         // Add the URL.
         trackVal.url = window.location.href;
 
         // Log term hits.
         if (settings.semi_anonymous.track_term_hits) {
-          trackVal.taxonomy = settings.dataLayer.taxonomy;
+          trackVal.taxonomy = dataLayer.taxonomy;
         }
 
         // Stash it.
