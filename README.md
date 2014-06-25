@@ -44,10 +44,11 @@ var myVal = $.jStorage.get('myThing');
 ```
 For ease of use you should stash data in JSON format, duh.
 ```javascript
-var myObj = {},
-    myObj.thing = 'something',
-    myObj.cost = 3;
-    myObj.percent = 27;
+var myObj = {
+  'thing': 'something',
+  'cost': 3,
+  'percent': 27
+};
 $.jStorage.set('mySave', JSON.stringify(myObj));
 
 // Later access and use.
