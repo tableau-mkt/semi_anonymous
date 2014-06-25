@@ -18,6 +18,9 @@
     };
 
     // Log only configured items.
+
+    // @todo Use the data-layer-helper for proper extraction of page meta items.
+
     if (semiAnon.tracking) {
       $.each(semiAnon.tracking, function (i, val) {
         // Add each item.

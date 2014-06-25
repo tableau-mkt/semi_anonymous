@@ -94,3 +94,5 @@ function semi_anonymous_preprocess_html(&$variables) {
     drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.users.js');
   }
 }
+
+// @todo Place checkbox on output Data Layer fields for tracking inclusion.
