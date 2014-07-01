@@ -21,7 +21,7 @@
 
     // @todo Use the data-layer-helper for proper extraction of page meta items.
 
-    if (semiAnon.tracking) {
+    if (semiAnon.tracking && typeof dataLayer[val] !== undefined) {
       $.each(semiAnon.tracking, function (i, val) {
         // Add each item.
         if (typeof dataLayer[val] !== undefined) {
@@ -35,8 +35,8 @@
     }
 
     // Log term hits.
-    if (semiAnon.track_term_hits) {
-      trackVals.taxonomy = dataLayer.taxonomy;
+    if (semiAnon.track_term_hits && typeof dataLayer[val] !== undefined) {
+      trackVals.taxonomy = dataLayer.entityTaxonomy;
     }
 
     // Stash it.
