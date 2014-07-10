@@ -43,26 +43,37 @@ function semi_anonymous_preprocess_html(&$variables) {
 
   // Add basic assets.
   if (variable_get($m . 'include', TRUE)) {
+    $libs = array('jstorage' => '/jstorage.min.js');
+    // Necessary libraries (just jStorage now).
+    // Using libraries 2.0
+    if (function_exists('libraries_load')) {
+      foreach ($libs as $lib_name => $lib_file) {
+        if (($library = libraries_detect($lib_name)) && !empty($library['installed'])) {
+          libraries_load($lib_name);
+        }
+        else {
+          // Something went wrong.
+          $error = $library['error'];
+          $error_message = $library['error message'];
+        }
+      }
+    }
+    else {
+      // Libraies 1.0
+      foreach ($libs as $lib_name => $lib_file) {
+        $path = libraries_get_path($lib_name);
+        if (!empty($path) && file_exists($path . $lib_file)) {
+          drupal_add_js($path . $lib_file);
+        }
+      }
+    }
     // JSON2.
-    if (function_exists('libraries_load') && libraries_load('json2')) {
-      // You have Libraries 2.0 and some module registered this one.
-    }
-    else {
-      $json_path = libraries_get_path('json2');
-      if (!empty($json_path) && file_exists($json_path . '/json2.js')) {
-        drupal_add_js($json_path . '/json2.js');
-      }
-    }
-    // jStorage.
-    if (function_exists('libraries_load') && libraries_load('jstorage')) {
-      // You have Libraries 2.0 and some module registered this one.
-    }
-    else {
-      $json_path = libraries_get_path('jstorage');
-      if (!empty($json_path) && file_exists($json_path . '/jstorage.js')) {
-        drupal_add_js($json_path . '/jstorage.min.js');
-      }
-    }
+    drupal_add_library('system', 'json2');
+  }
+
+  // Add user origin script.
+  if (variable_get($m . 'store_user_origins', TRUE)) {
+    drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.users.js');
   }
 
   // Allow for tracking.
@@ -88,11 +99,31 @@ function semi_anonymous_preprocess_html(&$variables) {
     // Add tracking library.
     drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
   }
-
-  // Add user origin library.
-  if (variable_get($m . 'store_user_origins', TRUE)) {
-    drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.users.js');
-  }
 }
 
-// @todo Place checkbox on output Data Layer fields for tracking inclusion.
+
+/**
+ * Implements hook_library().
+ */
+function semi_anonymous_library() {
+  $libraries = array();
+
+  $libraries['jstorage'] = array(
+    'name' => 'jStorage',
+    'vendor url' => 'http://www.jstorage.info',
+    'download url' => 'https://github.com/andris9/jStorage/archive/master.zip',
+    'version' => '0.4.11',
+    'files' => array(
+      'js' => array(
+        'jstorage.min.js' => array(
+          'type' => 'file',
+          'group' => JS_LIBRARY,
+          'every_page' => TRUE,
+        ),
+      ),
+    ),
+    'error message' => t('The jStorage library is missing.'),
+  );
+
+  return $libraries;
+}
