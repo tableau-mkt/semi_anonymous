@@ -1,5 +1,5 @@
 name = Semi Anonymous
-description = Store and track anonymous user behavior. Provide localStorage space, output meta data, store user origins, and handle stashing of client-side data.
+description = Integrates anonymous user behavior tracking via the Groucho library with Drupal.
 package = Other
 core = 7.x
 

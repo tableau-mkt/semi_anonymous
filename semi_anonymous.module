@@ -1,18 +1,8 @@
 <?php
 /**
  * @file
- * Client-side data space.
+ * Integrates Groucho with Drupal.
  */
-
-/**
- * Implements hook_help().
- */
-function semi_anonymous_help($path, $arg) {
-  switch ($path) {
-    case 'admin/help#semi_anonymous':
-      return t("Provide standardized space, and will handle stashing for client-side tracking and reactions to user behavior. This module is particularly intended for folks who use Varnish caching and have very little server-side interaction for anonymous users.");
-  }
-}
 
 
 /**
@@ -21,7 +11,7 @@ function semi_anonymous_help($path, $arg) {
 function semi_anonymous_menu() {
   $items['admin/config/system/semi-anonymous'] = array(
     'title' => 'Semi Anonymous',
-    'description' => 'Provide standardized space and adds page meta data client-side use.',
+    'description' => 'Integrates anonymous user behavior tracking via the Groucho library with Drupal.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('semi_anonymous_settings_form'),
     'access arguments' => array('administer site configuration'),
@@ -30,75 +20,6 @@ function semi_anonymous_menu() {
   );
 
   return $items;
-}
-
-
-/**
- * Implements hook_preprocess_HOOK().
- * Outputs meta data details of the page, for use with local storage.
- */
-function semi_anonymous_preprocess_html(&$variables) {
-  $ouput_data = array();
-  $m = 'semi_anonymous_';
-
-  // Add basic assets.
-  if (variable_get($m . 'include', TRUE)) {
-    $libs = array('jstorage' => '/jstorage.min.js');
-    // Necessary libraries (just jStorage now).
-    // Using libraries 2.0
-    if (function_exists('libraries_load')) {
-      foreach ($libs as $lib_name => $lib_file) {
-        if (($library = libraries_detect($lib_name)) && !empty($library['installed'])) {
-          libraries_load($lib_name);
-        }
-        else {
-          // Something went wrong.
-          $error = $library['error'];
-          $error_message = $library['error message'];
-        }
-      }
-    }
-    else {
-      // Libraies 1.0
-      foreach ($libs as $lib_name => $lib_file) {
-        $path = libraries_get_path($lib_name);
-        if (!empty($path) && file_exists($path . $lib_file)) {
-          drupal_add_js($path . $lib_file);
-        }
-      }
-    }
-    // JSON2.
-    drupal_add_library('system', 'json2');
-  }
-
-  // Add user origin script.
-  if (variable_get($m . 'store_user_origins', TRUE)) {
-    drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.users.js');
-  }
-
-  // Add user for tracking.
-  if (module_exists('datalayer') && (variable_get($m . 'track_browsing', FALSE))) {
-
-    // Output library settings.
-    $settings = array(
-      'tracking' => true,
-      'track_term_hits' => variable_get($m . 'track_term_hits', FALSE),
-      'track_browsing_extent' => variable_get($m . 'track_browsing_extent', 25),
-    );
-    $output = !empty($settings) ? drupal_json_encode($settings) : '';
-    $render = array(
-      '#type' => 'html_tag',
-      '#tag' => 'script',
-      '#value' => 'semiAnon = [' . $output . '];',
-      '#attributes' => array(
-        'type' => 'text/javascript',
-      ),
-    );
-    drupal_add_html_head($render, 'datalayer_meta');
-
-    // Add tracking library.
-    drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.tracking.js');
-  }
 }
 
 
@@ -124,6 +45,98 @@ function semi_anonymous_library() {
     ),
     'error message' => t('The jStorage library is missing.'),
   );
+  $libraries['groucho'] = array(
+    'name' => 'Groucho',
+    'version' => '0.1.0',
+    'vendor url' => 'https://github.com/tableau-mkt/groucho',
+    'download url' => 'https://github.com/tableau-mkt/groucho/archive/master.zip',
+    'files' => array(
+      'js' => array(
+        'groucho.min.js' => array(
+          'type' => 'file',
+          'group' => JS_LIBRARY,
+          'every_page' => TRUE,
+        ),
+      ),
+    ),
+    'error message' => t('The Groucho library is missing.'),
+  );
 
   return $libraries;
+}
+
+
+/**
+ * Implements hook_preprocess_HOOK().
+ * Outputs meta data details of the page, for use with local storage.
+ */
+function semi_anonymous_preprocess_html(&$variables) {
+  $ouput_data = array();
+  $m = 'semi_anonymous_';
+
+  // Add basic assets.
+  if (variable_get($m . 'include', TRUE)) {
+    $libs = array(
+      'groucho' => '/groucho.min.js',
+      'jstorage' => '/jstorage.min.js',
+    );
+    // Necessary libraries (just jStorage now).
+    // Using libraries 2.0
+    if (function_exists('libraries_load')) {
+      foreach ($libs as $lib_name => $lib_file) {
+        if (($library = libraries_detect($lib_name)) && !empty($library['installed'])) {
+          libraries_load($lib_name);
+        }
+        else {
+          // Something went wrong.
+          drupal_set_message($library['error message'], 'error');
+        }
+      }
+    }
+    else {
+      // Libraies 1.0
+      foreach ($libs as $lib_name => $lib_file) {
+        $path = libraries_get_path($lib_name);
+        if (!empty($path) && file_exists($path . $lib_file)) {
+          drupal_add_js($path . $lib_file);
+        }
+        else {
+          drupal_set_message('The ' . $lib_name . ' library is missing.', 'error');
+        }
+      }
+    }
+    // JSON2.
+    drupal_add_library('system', 'json2');
+  }
+
+  // Output config settings...
+  $properties = array_filter(variable_get($m . 'track_meta', array()));
+  $settings = array(
+    'taxonomyProperty' => 'entityTaxonomy',
+    'trackExtent' => variable_get($m . 'track_browsing_extent', 25),
+  );
+
+  // Add entity properties.
+  if (!empty($properties)) {
+    $settings['trackProperties'] = array_keys($properties);
+  }
+  else {
+    $settings['trackProperties'] = _datalayer_collect_meta_properties();
+  }
+  // Add taxonomy.
+  if (variable_get($m . 'track_term_hits', TRUE)) {
+    array_push($settings['trackProperties'], 'entityTaxonomy');
+  }
+
+  // Put it on the page.
+  $output = !empty($settings) ? drupal_json_encode($settings) : '';
+  $render = array(
+    '#type' => 'html_tag',
+    '#tag' => 'script',
+    '#value' => "window.groucho = window.groucho || {}; groucho.config = " . $output . ';',
+    '#attributes' => array(
+      'type' => 'text/javascript',
+    ),
+  );
+  drupal_add_html_head($render, 'datalayer_meta');
 }
