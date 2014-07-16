@@ -76,7 +76,7 @@ function semi_anonymous_preprocess_html(&$variables) {
     drupal_add_js(drupal_get_path('module', 'semi_anonymous') . '/js/semi_anonymous.users.js');
   }
 
-  // Allow for tracking.
+  // Add user for tracking.
   if (module_exists('datalayer') && (variable_get($m . 'track_browsing', FALSE))) {
 
     // Output library settings.
