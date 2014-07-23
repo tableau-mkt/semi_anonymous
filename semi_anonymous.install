@@ -1,10 +1,8 @@
 <?php
-
 /**
  * @file
  * Install, update, and uninstall hooks for the Semi Anonymous module.
  */
-
 
 /**
  * Implements hook_uninstall().

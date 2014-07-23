@@ -4,7 +4,6 @@
  * Integrates Groucho with Drupal.
  */
 
-
 /**
  * Implements hook_menu().
  */
@@ -68,10 +67,10 @@ function semi_anonymous_library() {
 
 /**
  * Implements hook_preprocess_HOOK().
+ *
  * Outputs meta data details of the page, for use with local storage.
  */
 function semi_anonymous_preprocess_html(&$variables) {
-  $ouput_data = array();
   $m = 'semi_anonymous_';
 
   // Add basic assets.
@@ -101,7 +100,7 @@ function semi_anonymous_preprocess_html(&$variables) {
           drupal_add_js($path . $lib_file);
         }
         else {
-          drupal_set_message('The ' . $lib_name . ' library is missing.', 'error');
+          drupal_set_message(t('The !lib_name library is missing.', array('!lib_name' => $lib_name)), 'error');
         }
       }
     }

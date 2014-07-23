@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Integration configurations.
+ */
 
 /**
  * Form callback for module configuration.
@@ -12,8 +16,8 @@ function semi_anonymous_settings_form($form_state) {
 
   $form['#prefix'] = t('Configuration options for using the !groucho library to leverage the !datalayer and create tracking records.',
     array(
-      '!groucho' => l('Groucho', 'https://github.com/tableau-mkt/groucho', array('external' => TRUE)),
-      '!datalayer' => l('Data Layer', 'https://www.drupal.org/project/datalayer', array('external' => TRUE)),
+      '!groucho' => l(t('Groucho'), 'https://github.com/tableau-mkt/groucho', array('external' => TRUE)),
+      '!datalayer' => l(t('Data Layer'), 'https://www.drupal.org/project/datalayer', array('external' => TRUE)),
     )
   );
 
@@ -43,7 +47,7 @@ function semi_anonymous_settings_form($form_state) {
     '#type' => 'checkbox',
     '#title' => t('Save/restore user data'),
     '#default_value' => variable_get($m . 'user_save', FALSE),
-    '#description' => t('Save user data to database for authenticated users. Will be restored and merged upon login.'),
+    '#description' => t('Stash data to DB. Restored/merged on login.'),
   );
   */
 
