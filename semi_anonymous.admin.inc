@@ -12,7 +12,7 @@ function semi_anonymous_settings_form($form_state) {
   $form = array();
   $m = 'semi_anonymous_';
   // Get available meta data.
-  $meta_data = _datalayer_collect_meta_properties();
+  $meta_data = _semi_anonymous_property_list();
 
   $form['#prefix'] = t('Configuration options for using the !groucho library to leverage the !datalayer and create tracking records.',
     array(

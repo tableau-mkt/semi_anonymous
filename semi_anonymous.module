@@ -23,9 +23,9 @@ function semi_anonymous_menu() {
 
 
 /**
- * Implements hook_library().
+ * Implements hook_libraries_info().
  */
-function semi_anonymous_library() {
+function semi_anonymous_libraries_info() {
   $libraries = array();
 
   $libraries['jstorage'] = array(
@@ -74,39 +74,38 @@ function semi_anonymous_preprocess_html(&$variables) {
   $m = 'semi_anonymous_';
 
   // Add basic assets.
-  if (variable_get($m . 'include', TRUE)) {
-    $libs = array(
-      'groucho' => '/groucho.min.js',
-      'jstorage' => '/jstorage.min.js',
-    );
-    // Necessary libraries (just jStorage now).
-    // Using libraries 2.0
-    if (function_exists('libraries_load')) {
-      foreach ($libs as $lib_name => $lib_file) {
-        if (($library = libraries_detect($lib_name)) && !empty($library['installed'])) {
-          libraries_load($lib_name);
-        }
-        else {
-          // Something went wrong.
-          drupal_set_message($library['error message'], 'error');
-        }
+  $libs = array(
+    'groucho' => 'groucho.min.js',
+    'jstorage' => 'jstorage.min.js',
+  );
+  // Necessary libraries (just jStorage now).
+  // Using libraries 2.0
+  if (function_exists('libraries_load')) {
+    foreach ($libs as $lib_name => $lib_file) {
+      $library = libraries_detect($lib_name);
+      if ($library && !empty($library['installed'])) {
+        libraries_load($lib_name);
+      }
+      else {
+        // Something went wrong.
+        drupal_set_message($library['error message'], 'error');
       }
     }
-    else {
-      // Libraies 1.0
-      foreach ($libs as $lib_name => $lib_file) {
-        $path = libraries_get_path($lib_name);
-        if (!empty($path) && file_exists($path . $lib_file)) {
-          drupal_add_js($path . $lib_file);
-        }
-        else {
-          drupal_set_message(t('The !lib_name library is missing.', array('!lib_name' => $lib_name)), 'error');
-        }
-      }
-    }
-    // JSON2.
-    drupal_add_library('system', 'json2');
   }
+  else {
+    // Libraies 1.0
+    foreach ($libs as $lib_name => $lib_file) {
+      $path = libraries_get_path($lib_name);
+      if (!empty($path) && file_exists($path . '/' . $lib_file)) {
+        drupal_add_js($path . '/' . $lib_file);
+      }
+      else {
+        drupal_set_message(t('The !lib_name library is missing.', array('!lib_name' => $lib_name)), 'error');
+      }
+    }
+  }
+  // JSON2.
+  drupal_add_library('system', 'json2');
 
   // Output config settings...
   $properties = array_filter(variable_get($m . 'track_meta', array()));
@@ -137,5 +136,23 @@ function semi_anonymous_preprocess_html(&$variables) {
       'type' => 'text/javascript',
     ),
   );
-  drupal_add_html_head($render, 'datalayer_meta');
+  drupal_add_html_head($render, 'semi_anonymous_settings');
+}
+
+
+/**
+ * Get property selection list for admin config.
+ */
+function _semi_anonymous_property_list() {
+  $return = array(
+    'entityType',
+    'entityBundle',
+    'entityId',
+    'entityLabel',
+  );
+  foreach (_datalayer_collect_meta_properties() as $p) {
+    $return[] = 'entity' . ucfirst($p);
+  }
+
+  return $return;
 }
