@@ -28,6 +28,22 @@ function semi_anonymous_menu() {
 function semi_anonymous_libraries_info() {
   $libraries = array();
 
+  $libraries['json2'] = array(
+    'name' => 'JSON2',
+    'vendor url' => 'https://github.com/douglascrockford/JSON-js',
+    'download url' => 'https://github.com/douglascrockford/JSON-js/archive/master.zip',
+    'version' => '2010-11-18',
+    'files' => array(
+      'js' => array(
+        'json2.min.js' => array(
+          'type' => 'file',
+          'group' => JS_LIBRARY,
+          'every_page' => TRUE,
+        ),
+      ),
+    ),
+    'error message' => t('The JSON2 library is missing.'),
+  );
   $libraries['jstorage'] = array(
     'name' => 'jStorage',
     'vendor url' => 'http://www.jstorage.info',
@@ -77,6 +93,7 @@ function semi_anonymous_preprocess_html(&$variables) {
   $libs = array(
     'groucho' => 'groucho.min.js',
     'jstorage' => 'jstorage.min.js',
+    'json2' => 'json2.min.js',
   );
   // Necessary libraries (just jStorage now).
   // Using libraries 2.0
@@ -104,8 +121,6 @@ function semi_anonymous_preprocess_html(&$variables) {
       }
     }
   }
-  // JSON2.
-  drupal_add_library('system', 'json2');
 
   // Output config settings...
   $properties = array_filter(variable_get($m . 'track_meta', array()));
