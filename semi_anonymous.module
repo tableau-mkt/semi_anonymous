@@ -91,9 +91,9 @@ function semi_anonymous_preprocess_html(&$variables) {
 
   // Add basic assets.
   $libs = array(
-    'groucho' => 'groucho.min.js',
-    'jstorage' => 'jstorage.min.js',
     'json2' => 'json2.min.js',
+    'jstorage' => 'jstorage.min.js',
+    'groucho' => 'groucho.min.js',
   );
   // Necessary libraries (just jStorage now).
   // Using libraries 2.0
