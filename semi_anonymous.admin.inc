@@ -59,10 +59,11 @@ function semi_anonymous_settings_form($form_state) {
       ),
     ),
     '#title' => 'Meta data to stash',
-    '#default_value' => variable_get($m . 'track_meta', 0),
+    '#default_value' => variable_get($m . 'track_meta', array()),
     '#options' => drupal_map_assoc($meta_data),
     '#description' => t('Meta data properties to include in record data. Marking none will output everything available.'),
   );
+
   $form[$m . 'track_term_hits'] = array(
     '#type' => 'checkbox',
     '#states' => array(
