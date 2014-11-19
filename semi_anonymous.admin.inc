@@ -76,5 +76,19 @@ function semi_anonymous_settings_form($form_state) {
     '#description' => t('Adds taxonomy terms to list of tracked data. Allows anonymous favorites!'),
   );
 
+  $form[$m . 'threshold'] = array(
+    '#title' => t('Global threshold'),
+    '#type' => 'textfield',
+    '#size' => 10,
+    '#default_value' => variable_get($m . 'threshold', 2),
+    '#description' => t('Count value a term must have before considering it a favorite.'),
+  );
+  $form[$m . 'record_form_submits'] = array(
+    '#title' => t('Record form submits'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get($m . 'record_form_submits', 0),
+    '#description' => t('Record all form submits as Groucho activity.'),
+  );
+
   return system_settings_form($form);
 }

@@ -127,6 +127,7 @@ function semi_anonymous_preprocess_html(&$variables) {
   $settings = array(
     'taxonomyProperty' => 'entityTaxonomy',
     'trackExtent' => variable_get($m . 'track_browsing_extent', 25),
+    'favThreshold' => variable_get($m . 'threshold', 2),
   );
 
   // Add entity properties.
@@ -152,6 +153,19 @@ function semi_anonymous_preprocess_html(&$variables) {
     ),
   );
   drupal_add_html_head($render, 'semi_anonymous_settings');
+}
+
+
+/**
+ * Implements hook_form_alter().
+ */
+function semi_anonymous_form_alter(&$form, &$form_state, $form_id) {
+  // Custom activity: form post.
+  if (variable_get('semi_anonymous_record_form_submits', FALSE)) {
+    $form['#attached']['js'] = array(
+      drupal_get_path('module', 'semi_anonymous') . '/js/custom-activities.js',
+    );
+  }
 }
 
 
