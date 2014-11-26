@@ -162,8 +162,9 @@ function semi_anonymous_preprocess_html(&$variables) {
 function semi_anonymous_form_alter(&$form, &$form_state, $form_id) {
   // Custom activity: form post.
   if (variable_get('semi_anonymous_record_form_submits', FALSE)) {
-    $form['#attached']['js'] = array(
-      drupal_get_path('module', 'semi_anonymous') . '/js/custom-activities.js',
+    $form['#attached']['js'][] = array(
+      'data' => drupal_get_path('module', 'semi_anonymous') . '/js/custom-activities.js',
+      'type' => 'file',
     );
   }
 }
