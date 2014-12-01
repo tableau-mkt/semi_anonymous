@@ -77,7 +77,7 @@ function semi_anonymous_settings_form($form_state) {
   );
 
   $form[$m . 'threshold'] = array(
-    '#title' => t('Global threshold'),
+    '#title' => t('Favorites threshold'),
     '#type' => 'textfield',
     '#size' => 10,
     '#default_value' => variable_get($m . 'threshold', 2),
