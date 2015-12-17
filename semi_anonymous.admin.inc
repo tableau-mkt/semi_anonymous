@@ -14,14 +14,20 @@ function semi_anonymous_settings_form($form_state) {
   // Get available meta data.
   $meta_data = _semi_anonymous_property_list();
 
-  $form['#prefix'] = t('Configuration options for using the !groucho library to leverage the !datalayer and create tracking records.',
-    array(
-      '!groucho' => l(t('Groucho'), 'https://github.com/tableau-mkt/groucho', array('external' => TRUE)),
-      '!datalayer' => l(t('Data Layer'), 'https://www.drupal.org/project/datalayer', array('external' => TRUE)),
-    )
+  $form['basic'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Basics',
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
   );
-
-  $form[$m . 'track_browsing_extent'] = array(
+  $form['basic']['prefix'] = array(
+    '#markup' => '<p>' . t('Options for using the !groucho library to leverage the !datalayer and create tracking records.',
+      array(
+        '!groucho' => l(t('Groucho'), 'https://github.com/tableau-mkt/groucho', array('external' => TRUE)),
+        '!datalayer' => l(t('Data Layer'), 'https://www.drupal.org/project/datalayer', array('external' => TRUE)),
+    )) . '</p>',
+  );
+  $form['basic'][$m . 'track_browsing_extent'] = array(
     '#type' => 'select',
     '#states' => array(
       'enbled' => array(
@@ -41,6 +47,13 @@ function semi_anonymous_settings_form($form_state) {
     ),
     '#default_value' => variable_get($m . 'track_browsing_extent', 25),
   );
+  $form['basic'][$m . 'threshold'] = array(
+    '#title' => t('Favorites threshold'),
+    '#type' => 'textfield',
+    '#size' => 10,
+    '#default_value' => variable_get($m . 'threshold', 2),
+    '#description' => t('Count value a term must have before considering it a favorite.'),
+  );
   /*
   // @todo: Save and restore user data for past authenticated user sessions.
   $form[$m . 'user_save'] = array(
@@ -51,7 +64,13 @@ function semi_anonymous_settings_form($form_state) {
   );
   */
 
-  $form[$m . 'track_meta'] = array(
+  $form['meta'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Meta Data',
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+  );
+  $form['meta'][$m . 'track_meta'] = array(
     '#type' => 'checkboxes',
     '#states' => array(
       'enabled' => array(
@@ -64,7 +83,7 @@ function semi_anonymous_settings_form($form_state) {
     '#description' => t('Meta data properties to include in record data. Marking none will output everything available.'),
   );
 
-  $form[$m . 'track_term_hits'] = array(
+  $form['meta'][$m . 'track_term_hits'] = array(
     '#type' => 'checkbox',
     '#states' => array(
       'enabled' => array(
@@ -76,18 +95,23 @@ function semi_anonymous_settings_form($form_state) {
     '#description' => t('Adds taxonomy terms to list of tracked data. Allows anonymous favorites!'),
   );
 
-  $form[$m . 'threshold'] = array(
-    '#title' => t('Favorites threshold'),
-    '#type' => 'textfield',
-    '#size' => 10,
-    '#default_value' => variable_get($m . 'threshold', 2),
-    '#description' => t('Count value a term must have before considering it a favorite.'),
+  $form['activities'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Activities',
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
   );
-  $form[$m . 'record_form_submits'] = array(
+  $form['activities'][$m . 'record_form_submits'] = array(
     '#title' => t('Record form submits'),
     '#type' => 'checkbox',
-    '#default_value' => variable_get($m . 'record_form_submits', 0),
+    '#default_value' => variable_get($m . 'record_form_submits', FALSE),
     '#description' => t('Record all form submits as Groucho activity.'),
+  );
+  $form['activities'][$m . 'record_forms'] = array(
+    '#title' => t('Forms to record'),
+    '#type' => 'textarea',
+    '#default_value' => variable_get($m . 'record_forms', ''),
+    '#description' => t('Record submits from these forms. Leave blank for all forms.'),
   );
 
   return system_settings_form($form);

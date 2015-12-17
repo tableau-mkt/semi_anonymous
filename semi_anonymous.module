@@ -122,9 +122,15 @@ function semi_anonymous_preprocess_html(&$variables) {
     }
   }
 
+  // Form submit recording behavior.
+  $forms = _semi_anonymous_string_to_array(variable_get($m . 'record_forms', ''));
+  $drupal_settings = array(
+    'recordForms' => variable_get($m . 'record_form_submits', FALSE) ? $forms : FALSE,
+  );
+
   // Output config settings...
   $properties = array_filter(variable_get($m . 'track_meta', array()));
-  $settings = array(
+  $groucho_configs = array(
     'taxonomyProperty' => 'entityTaxonomy',
     'trackExtent' => variable_get($m . 'track_browsing_extent', 25),
     'favThreshold' => variable_get($m . 'threshold', 2),
@@ -132,18 +138,18 @@ function semi_anonymous_preprocess_html(&$variables) {
 
   // Add entity properties.
   if (!empty($properties)) {
-    $settings['trackProperties'] = array_keys($properties);
+    $groucho_configs['trackProperties'] = array_keys($properties);
   }
   else {
-    $settings['trackProperties'] = _datalayer_collect_meta_properties();
+    $groucho_configs['trackProperties'] = _datalayer_collect_meta_properties();
   }
   // Add taxonomy.
   if (variable_get($m . 'track_term_hits', TRUE)) {
-    array_push($settings['trackProperties'], 'entityTaxonomy');
+    array_push($groucho_configs['trackProperties'], 'entityTaxonomy');
   }
 
-  // Put it on the page.
-  $output = !empty($settings) ? drupal_json_encode($settings) : '';
+  // Put Groucho configs it on the page.
+  $output = !empty($groucho_configs) ? drupal_json_encode($groucho_configs) : '';
   $render = array(
     '#type' => 'html_tag',
     '#tag' => 'script',
@@ -153,6 +159,9 @@ function semi_anonymous_preprocess_html(&$variables) {
     ),
   );
   drupal_add_html_head($render, 'semi_anonymous_settings');
+
+  // Put Drupal-type settings on the page.
+  drupal_add_js(array('semiAnonymous' => $drupal_settings), 'setting');
 }
 
 
@@ -160,8 +169,9 @@ function semi_anonymous_preprocess_html(&$variables) {
  * Implements hook_form_alter().
  */
 function semi_anonymous_form_alter(&$form, &$form_state, $form_id) {
-  // Custom activity: form post.
-  if (variable_get('semi_anonymous_record_form_submits', FALSE)) {
+  // Custom activities for form posts.
+  $forms = _semi_anonymous_string_to_array(variable_get('semi_anonymous_record_forms', ''));
+  if (variable_get('semi_anonymous_record_form_submits', FALSE) && in_array($form_id, $forms)) {
     $form['#attached']['js'][] = array(
       'data' => drupal_get_path('module', 'semi_anonymous') . '/js/custom-activities.js',
       'type' => 'file',
@@ -185,4 +195,12 @@ function _semi_anonymous_property_list() {
   }
 
   return $return;
+}
+
+
+/**
+ * Convert string to array, splitting on comma and whitespace.
+ */
+function _semi_anonymous_string_to_array($value) {
+  return preg_split('/[\s,]+/', $value, NULL, PREG_SPLIT_NO_EMPTY);
 }
