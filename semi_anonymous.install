@@ -1,20 +1,45 @@
 <?php
 /**
- * @file
- * Install, update, and uninstall hooks for the Semi Anonymous module.
+ * @file Install, update, and uninstall hooks for the Semi Anonymous module.
  */
+
+/**
+ * Implements hook_schema().
+ */
+function semi_anonymous_entity_schema() {
+  $schema['semi_anonymous_user_data'] = array(
+    'description' => t('Data storage blob for front end user info.'),
+    'fields' => array(
+      'uid' => array(
+        'description' => 'Unique id of user.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'data' => array(
+        'description' => 'Data stashed from the front-end.',
+        'type' => 'text',
+        'size' => 'normal',
+        'serialize' => TRUE,
+      ),
+    ),
+    'primary key' => 'uid',
+  );
+
+  return $schema;
+}
+
 
 /**
  * Implements hook_uninstall().
  */
 function semi_anonymous_page_uninstall() {
-  $variables = array(
-    'semi_anonymous_track_browsing_extent',
-    'semi_anonymous_track_meta',
-    'semi_anonymous_track_term_hits',
-  );
-
-  foreach ($variables as $variable) {
-    variable_del($variable);
+  // Remove all configurations.
+  global $conf;
+  foreach($conf as $key => $value) {
+    if (0 === strpos($key, 'semi_anonymous_')) {
+      variable_del($conf[$key]);
+    }
   }
 }

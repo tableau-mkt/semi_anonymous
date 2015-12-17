@@ -105,7 +105,7 @@ function semi_anonymous_settings_form($form_state) {
     '#title' => t('Record form submits'),
     '#type' => 'checkbox',
     '#default_value' => variable_get($m . 'record_form_submits', FALSE),
-    '#description' => t('Record all form submits as Groucho activity.'),
+    '#description' => t('Toggle recording form submits as Groucho activities.'),
   );
   $form['activities'][$m . 'record_forms'] = array(
     '#title' => t('Forms to record'),
@@ -113,6 +113,36 @@ function semi_anonymous_settings_form($form_state) {
     '#default_value' => variable_get($m . 'record_forms', ''),
     '#description' => t('Record submits from these forms. Leave blank for all forms.'),
   );
+  $form['activities'][$m . 'stash_active'] = array(
+    '#title' => t('Stash/Restore'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get($m . 'record_form_submits', FALSE),
+    '#description' => t('Toggle recording form submits as Groucho activities.'),
+  );
+
+  // @todo Implement table to pick "schedule",
+  // eg: every time activity is made, time based, etc.
+
+  $form['activities'][$m . 'stashed_activities'] = array(stash
+    '#title' => t('Stashed'),
+    '#type' => 'select',
+    '#options' => drupal_map_assoc(
+        module_invoke_all('stashed_semi_anonymous_activities_info')
+      ) + array('0' => t('None')),
+    ),
+    '#default_value' => variable_get($m . 'stashed_activities'),
+    '#description' => t('Which activities to stash and restore for users.'),
+  );
+
+  /**
+   * [_semi_anonymous_get_stashed_activities description]
+   * @return [type] [description]
+   */
+  function _semi_anonymous_get_stashed_activities() {
+
+    return module_invoke_all('stashed_semi_anonymous_activities_info');
+  }
+
 
   return system_settings_form($form);
 }
