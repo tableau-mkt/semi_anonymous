@@ -42,7 +42,7 @@ function semi_anonymous_libraries_info() {
         ),
       ),
     ),
-    'error message' => t('The JSON2 library is missing.'),
+    'error message' => t('The JSON2 library is missing for IE8 compatability.'),
   );
   $libraries['jstorage'] = array(
     'name' => 'jStorage',
@@ -75,6 +75,9 @@ function semi_anonymous_libraries_info() {
       ),
     ),
     'error message' => t('The Groucho library is missing.'),
+    'dependencies' => array(
+      array('semi_anonymous', 'jstorage'),
+    ),
   );
 
   return $libraries;
@@ -89,7 +92,117 @@ function semi_anonymous_libraries_info() {
 function semi_anonymous_preprocess_html(&$variables) {
   $m = 'semi_anonymous_';
 
-  // Add basic assets.
+  // Library includes.
+  _semi_anonymous_add_basic_assets();
+
+  // Form submit recording behavior.
+  $forms = _semi_anonymous_string_to_array(variable_get($m . 'record_forms', ''));
+  $drupal_settings = array(
+    'recordForms' => variable_get($m . 'record_form_submits', FALSE) ? $forms : FALSE,
+    'stashedActivites' => variable_get('semi_anonymous_stashed_activities', array()),
+    'userData' => _semi_anonymous_get_user_data(),
+  );
+  // Put Drupal-type settings on the page.
+  drupal_add_js(array('semiAnonymous' => $drupal_settings), 'setting');
+
+  // Output config settings...
+  $properties = array_filter(variable_get($m . 'track_meta', array()));
+  $groucho_configs = array(
+    'taxonomyProperty' => 'entityTaxonomy',
+    'trackExtent' => variable_get($m . 'track_browsing_extent', 25),
+    'favThreshold' => variable_get($m . 'threshold', 2),
+  );
+
+  // Add entity properties.
+  if (!empty($properties)) {
+    $groucho_configs['trackProperties'] = array_keys($properties);
+  }
+  else {
+    $groucho_configs['trackProperties'] = _datalayer_collect_meta_properties();
+  }
+  // Add taxonomy.
+  if (variable_get($m . 'track_term_hits', TRUE)) {
+    array_push($groucho_configs['trackProperties'], 'entityTaxonomy');
+  }
+
+  // Put Groucho configs it on the page.
+  $config_output = !empty($groucho_configs) ? drupal_json_encode($groucho_configs) : '';
+  drupal_add_html_head(array(
+    '#type' => 'html_tag',
+    '#tag' => 'script',
+    '#value' => "window.groucho = window.groucho || {}; groucho.config = " . $config_output . ';',
+    '#attributes' => array(
+      'type' => 'text/javascript',
+    ),
+  ), 'semi_anonymous_settings');
+}
+
+
+/**
+ * Implements hook_form_alter().
+ */
+function semi_anonymous_form_alter(&$form, &$form_state, $form_id) {
+  // Custom activities for form posts.
+  $forms = _semi_anonymous_string_to_array(variable_get('semi_anonymous_record_forms', ''));
+  if (variable_get('semi_anonymous_record_form_submits', FALSE) && in_array($form_id, $forms)) {
+    $form['#attached']['js'][] = array(
+      'data' => drupal_get_path('module', 'semi_anonymous') . '/js/custom-activities.js',
+      'type' => 'file',
+    );
+  }
+}
+
+
+/**
+ * Implements hook_entity_property_info().
+ */
+function semi_anonymous_entity_load($entities, $type) {
+  if ($type === 'user') {
+    foreach ($entities as $entity) {
+      // Data storage blob for front end user info.
+      $entity->semi_anonymous = _semi_anonymous_get_user_data($entity->uid);
+    }
+  }
+}
+
+
+/**
+ * Implements hook_stashed_semi_anonymous_activities_info().
+ */
+function semi_anonymous_stashed_semi_anonymous_activities_info(&$activities) {
+  // Add internal stashed activities.
+  return array(
+    'formSubmit',
+    'browsing',
+  );
+}
+
+
+/**
+ * Retrieve front-end data stored for user.
+ *
+ * @param string $uid
+ *
+ * @return string
+ */
+function _semi_anonymous_get_user_data($uid = 0) {
+  global $user;
+  $uid = $uid ?: $user->uid;
+
+  $result = db_select('{semi_anonymous_user_data}', 'u')
+    ->fields('d')
+    ->condition('uid', $uid)
+    ->execute()
+    ->fetchObject();
+
+  return $result->data;
+}
+
+
+/**
+ * Add basic assets.
+ */
+function _semi_anonymous_add_basic_assets() {
   $libs = array(
     'json2' => 'json2.min.js',
     'jstorage' => 'jstorage.min.js',
@@ -120,62 +233,6 @@ function semi_anonymous_preprocess_html(&$variables) {
         drupal_set_message(t('The !lib_name library is missing.', array('!lib_name' => $lib_name)), 'error');
       }
     }
-  }
-
-  // Form submit recording behavior.
-  $forms = _semi_anonymous_string_to_array(variable_get($m . 'record_forms', ''));
-  $drupal_settings = array(
-    'recordForms' => variable_get($m . 'record_form_submits', FALSE) ? $forms : FALSE,
-  );
-
-  // Output config settings...
-  $properties = array_filter(variable_get($m . 'track_meta', array()));
-  $groucho_configs = array(
-    'taxonomyProperty' => 'entityTaxonomy',
-    'trackExtent' => variable_get($m . 'track_browsing_extent', 25),
-    'favThreshold' => variable_get($m . 'threshold', 2),
-  );
-
-  // Add entity properties.
-  if (!empty($properties)) {
-    $groucho_configs['trackProperties'] = array_keys($properties);
-  }
-  else {
-    $groucho_configs['trackProperties'] = _datalayer_collect_meta_properties();
-  }
-  // Add taxonomy.
-  if (variable_get($m . 'track_term_hits', TRUE)) {
-    array_push($groucho_configs['trackProperties'], 'entityTaxonomy');
-  }
-
-  // Put Groucho configs it on the page.
-  $output = !empty($groucho_configs) ? drupal_json_encode($groucho_configs) : '';
-  $render = array(
-    '#type' => 'html_tag',
-    '#tag' => 'script',
-    '#value' => "window.groucho = window.groucho || {}; groucho.config = " . $output . ';',
-    '#attributes' => array(
-      'type' => 'text/javascript',
-    ),
-  );
-  drupal_add_html_head($render, 'semi_anonymous_settings');
-
-  // Put Drupal-type settings on the page.
-  drupal_add_js(array('semiAnonymous' => $drupal_settings), 'setting');
-}
-
-
-/**
- * Implements hook_form_alter().
- */
-function semi_anonymous_form_alter(&$form, &$form_state, $form_id) {
-  // Custom activities for form posts.
-  $forms = _semi_anonymous_string_to_array(variable_get('semi_anonymous_record_forms', ''));
-  if (variable_get('semi_anonymous_record_form_submits', FALSE) && in_array($form_id, $forms)) {
-    $form['#attached']['js'][] = array(
-      'data' => drupal_get_path('module', 'semi_anonymous') . '/js/custom-activities.js',
-      'type' => 'file',
-    );
   }
 }
 
