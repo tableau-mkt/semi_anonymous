@@ -110,7 +110,7 @@ function semi_anonymous_preprocess_html(&$variables) {
     }
   }
   else {
-    // Libraies 1.0
+    // Libraries 1.0
     foreach ($libs as $lib_name => $lib_file) {
       $path = libraries_get_path($lib_name);
       if (!empty($path) && file_exists($path . '/' . $lib_file)) {
@@ -134,6 +134,7 @@ function semi_anonymous_preprocess_html(&$variables) {
     'taxonomyProperty' => 'entityTaxonomy',
     'trackExtent' => variable_get($m . 'track_browsing_extent', 25),
     'favThreshold' => variable_get($m . 'threshold', 2),
+    'ttl' => variable_get($m . 'ttl', 0),
   );
 
   // Add entity properties.
