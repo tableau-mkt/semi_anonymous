@@ -54,6 +54,14 @@ function semi_anonymous_settings_form($form_state) {
     '#default_value' => variable_get($m . 'threshold', 2),
     '#description' => t('Count value a term must have before considering it a favorite.'),
   );
+  $form['basic'][$m . 'ttl'] = array(
+    '#title' => t('Expiration (ttl)'),
+    '#type' => 'textfield',
+    '#size' => 10,
+    '#element_validate' => array('element_validate_integer_positive'),
+    '#default_value' => variable_get($m . 'ttl', 0),
+    '#description' => t('The (global) amount of time (in ms) to store values.'),
+  );
   /*
   // @todo: Save and restore user data for past authenticated user sessions.
   $form[$m . 'user_save'] = array(
