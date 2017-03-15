@@ -113,6 +113,21 @@ function semi_anonymous_settings_form($form_state) {
     '#default_value' => variable_get($m . 'record_forms', ''),
     '#description' => t('Record submits from these forms. Leave blank for all forms.'),
   );
+  $form['activities'][$m . 'record_form_fields'] = array(
+    '#title' => t('Fields to stash'),
+    '#type' => 'textarea',
+    '#default_value' => variable_get($m . 'record_form_fields', ''),
+    '#description' => t('Add form field values to stashed events. Refer to fields via the input name attribute. Form id is present by default.'),
+  );
+  $form['activities'][$m . 'track_click_selector'] = array(
+    '#title' => t('Click stash selector'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get($m . 'track_click_selector', ''),
+    '#description' => t('DOM selector for which clicks to stash as !lastclicked. Leave empty to avoid tracking. Simple suggested value: !anchor', array(
+      '!lastclicked' => '<code>user.lastClicked</code>',
+      '!anchor' => '<code>a</code>',
+    )),
+  );
 
   return system_settings_form($form);
 }

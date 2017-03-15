@@ -27,6 +27,7 @@ function semi_anonymous_menu() {
  */
 function semi_anonymous_libraries_info() {
   $libraries = array();
+  $groucho_file = variable_get('semi_anonymous_groucho_file', 'groucho.min.js');
 
   $libraries['json2'] = array(
     'name' => 'JSON2',
@@ -67,7 +68,7 @@ function semi_anonymous_libraries_info() {
     'download url' => 'https://github.com/tableau-mkt/groucho/archive/master.zip',
     'files' => array(
       'js' => array(
-        'groucho.min.js' => array(
+        $groucho_file => array(
           'type' => 'file',
           'group' => JS_LIBRARY,
           'every_page' => TRUE,
@@ -93,10 +94,9 @@ function semi_anonymous_preprocess_html(&$variables) {
   $libs = array(
     'json2' => 'json2.min.js',
     'jstorage' => 'jstorage.min.js',
-    'groucho' => 'groucho.min.js',
+    'groucho' => variable_get('semi_anonymous_groucho_file', 'groucho.min.js'),
   );
-  // Necessary libraries (just jStorage now).
-  // Using libraries 2.0
+  // Libraries 2.0
   if (function_exists('libraries_load')) {
     foreach ($libs as $lib_name => $lib_file) {
       $library = libraries_detect($lib_name);
@@ -117,15 +117,20 @@ function semi_anonymous_preprocess_html(&$variables) {
         drupal_add_js($path . '/' . $lib_file);
       }
       else {
-        drupal_set_message(t('The !lib_name library is missing.', array('!lib_name' => $lib_name)), 'error');
+        drupal_set_message(t('The !lib_name library is missing.', array(
+          '!lib_name' => $lib_name
+        )), 'error');
       }
     }
   }
 
-  // Form submit recording behavior.
+  // Output form submit stashing configuration.
+  $record_forms = variable_get($m . 'record_form_submits', FALSE);
   $forms = _semi_anonymous_string_to_array(variable_get($m . 'record_forms', ''));
+  $form_fields = _semi_anonymous_string_to_array(variable_get($m . 'record_form_fields', ''));
   $drupal_settings = array(
-    'recordForms' => variable_get($m . 'record_form_submits', FALSE) ? $forms : FALSE,
+    'recordForms' => $record_forms ? $forms : array(),
+    'recordFormFields' => $record_forms ? $form_fields : array(),
   );
 
   // Output config settings...
@@ -134,6 +139,7 @@ function semi_anonymous_preprocess_html(&$variables) {
     'taxonomyProperty' => 'entityTaxonomy',
     'trackExtent' => variable_get($m . 'track_browsing_extent', 25),
     'favThreshold' => variable_get($m . 'threshold', 2),
+    'lastClicked' => variable_get($m . 'track_click_selector', ''),
   );
 
   // Add entity properties.
@@ -153,7 +159,7 @@ function semi_anonymous_preprocess_html(&$variables) {
   $render = array(
     '#type' => 'html_tag',
     '#tag' => 'script',
-    '#value' => "window.groucho = window.groucho || {}; groucho.config = " . $output . ';',
+    '#value' => "var groucho = window.groucho || {}; groucho.config = " . $output . ';',
     '#attributes' => array(
       'type' => 'text/javascript',
     ),

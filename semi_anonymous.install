@@ -8,13 +8,11 @@
  * Implements hook_uninstall().
  */
 function semi_anonymous_page_uninstall() {
-  $variables = array(
-    'semi_anonymous_track_browsing_extent',
-    'semi_anonymous_track_meta',
-    'semi_anonymous_track_term_hits',
-  );
-
-  foreach ($variables as $variable) {
-    variable_del($variable);
+  // Remove all configurations.
+  global $conf;
+  foreach($conf as $key => $value) {
+    if (0 === strpos($key, 'semi_anonymous_')) {
+      variable_del($conf[$key]);
+    }
   }
 }
